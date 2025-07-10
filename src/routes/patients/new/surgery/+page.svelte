@@ -149,6 +149,9 @@ await addDoc(patientsRef, {
 <div class="form-container">
   <h1>Surgery Form</h1>
 
+  <!-- 🩺 Section 1: Patient Information -->
+  <h2>1. Patient Information</h2>
+
   <label>Hospital Town</label>
   <input bind:value={hospitalTown} />
 
@@ -175,6 +178,9 @@ await addDoc(patientsRef, {
     <option value="Not applicable">Not applicable</option>
   </select>
 
+  <!-- 🧑‍⚕️ Section 2: Surgeon Information -->
+  <h2>2. Surgeon Information</h2>
+
   <label>Surgeon Name</label>
   <input bind:value={surgeonName} />
 
@@ -192,6 +198,9 @@ await addDoc(patientsRef, {
 
   <label>Operations by Surgeon per Year</label>
   <input type="number" bind:value={opsBySurgeon} min="0" />
+
+  <!-- 🛠️ Section 3: Operation Information -->
+  <h2>3. Operation Information</h2>
 
   <label>Operation Date</label>
   <input type="date" bind:value={operationDate} />
@@ -285,7 +294,7 @@ await addDoc(patientsRef, {
     <option value="Same-day discharge">Same-day discharge</option>
   </select>
 
-  <label>Number of Hospital Days</label>
+  <label>Nights Stayed at Hospital (0 = Outpatient)</label>
   <input type="number" bind:value={hospitalDays} min="0" />
 
   <label>Date Wound Closed</label>

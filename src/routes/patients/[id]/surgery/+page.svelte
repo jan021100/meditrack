@@ -154,6 +154,9 @@
 <div class="form-container">
   <h1>Surgery Form</h1>
 
+  <!-- 🩺 Section 1: Patient Information -->
+  <h2>1. Patient Information</h2>
+
   <label>Hospital Town</label>
   <input bind:value={hospitalTown} />
 
@@ -180,6 +183,9 @@
     <option value="Not applicable">Not applicable</option>
   </select>
 
+  <!-- 🧑‍⚕️ Section 2: Surgeon Information -->
+  <h2>2. Surgeon Information</h2>
+
   <label>Surgeon Name</label>
   <input bind:value={surgeonName} />
 
@@ -197,6 +203,9 @@
 
   <label>Operations by Surgeon per Year</label>
   <input type="number" bind:value={opsBySurgeon} min="0" />
+
+  <!-- 🛠️ Section 3: Operation Information -->
+  <h2>3. Operation Information</h2>
 
   <label>Operation Date</label>
   <input type="date" bind:value={operationDate} />
@@ -290,7 +299,7 @@
     <option value="Same-day discharge">Same-day discharge</option>
   </select>
 
-  <label>Number of Hospital Days</label>
+  <label>Nights Stayed at Hospital (0 = Outpatient)</label>
   <input type="number" bind:value={hospitalDays} min="0" />
 
   <label>Date Wound Closed</label>
@@ -302,12 +311,12 @@
   <label>Additional Comments</label>
   <textarea rows="3" bind:value={comments}></textarea>
 
-  <button on:click={saveSurgery} disabled={submitting}>
+  <button on:click={saveCase} disabled={submitting}>
     {submitting ? 'Saving...' : '💾 Save Surgery'}
   </button>
 
   {#if success}
-    <p class="success">✅ Surgery successfully saved!</p>
+    <p class="success">✅ Case successfully saved!</p>
   {/if}
 
   {#if error}

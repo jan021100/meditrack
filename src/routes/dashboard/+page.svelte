@@ -1,11 +1,26 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+  import {
+    getFirestore,
+    collection,
+    query,
+    where,
+    getDocs,
+    orderBy,
+    Timestamp
+  } from 'firebase/firestore';
   import { getAuth } from 'firebase/auth';
   import { goto } from '$app/navigation';
 
   const db = getFirestore();
-  let patients: any[] = [];
+  let patients: {
+    id: string;
+    sex?: string;
+    birthDate?: string;
+    operationDate?: string;
+    createdAt?: Date | null;
+  }[] = [];
+
   let loading = true;
 
   async function fetchPatients() {
@@ -13,9 +28,24 @@
     const user = auth.currentUser;
     if (!user) return;
 
-    const q = query(collection(db, 'patients'), where('userId', '==', user.uid));
+    const q = query(
+      collection(db, 'patients'),
+      where('userId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+
     const snapshot = await getDocs(q);
-    patients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    patients = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        sex: data.sex,
+        birthDate: data.birthDate,
+        operationDate: data.operationDate,
+        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : null
+      };
+    });
+
     loading = false;
   }
 
@@ -23,10 +53,13 @@
     goto('/patients/new');
   }
 
-  function formatDate(dateString: string): string {
-    if (!dateString) return '-';
-    const d = new Date(dateString);
-    return d.toLocaleDateString();
+  function formatDate(date: Date | null): string {
+    if (!date) return '-';
+    return date.toLocaleDateString('en-DE', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
   }
 
   onMount(fetchPatients);
@@ -78,10 +111,12 @@
     background: #e9e9e6;
   }
 
-  .case-id {
-    font-size: 0.9rem;
-    font-weight: 400;
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     color: #555;
+    font-size: 0.9rem;
     margin-bottom: 0.5rem;
   }
 
@@ -111,7 +146,10 @@
       {#each patients as patient}
         <li>
           <div class="patient-card" on:click={() => goto(`/patients/${patient.id}`)}>
-            <div class="case-id">🆔 Case ID: {patient.id}</div>
+            <div class="card-header">
+              <div>🆔 Case ID: {patient.id}</div>
+              <div>{formatDate(patient.createdAt)}</div>
+            </div>
             <div class="info-row">
               <div><span class="info-label">Sex:</span> {patient.sex || '-'}</div>
               <div><span class="info-label">Birth Date:</span> {patient.birthDate || '-'}</div>
