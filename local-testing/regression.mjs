@@ -16,7 +16,7 @@ const adb=req('firebase-admin/firestore').getFirestore(admin);
 const aauth=req('firebase-admin/auth').getAuth(admin);
 const {initializeApp,deleteApp}=await server.ssrLoadModule('firebase/app');
 const {getAuth,connectAuthEmulator,signInWithCustomToken}=await server.ssrLoadModule('firebase/auth');
-const {getFirestore,connectFirestoreEmulator,getDocs,getDoc,doc,setDoc,updateDoc,deleteDoc,query,where,collection,terminate,serverTimestamp}=await server.ssrLoadModule('firebase/firestore');
+const {getFirestore,connectFirestoreEmulator,getDocs,getDoc,doc,setDoc,updateDoc,deleteDoc,query,where,collection,terminate,serverTimestamp,getDocFromCache}=await server.ssrLoadModule('firebase/firestore');
 const apps=[];const extraUids=[];let uid;
 const otherPatient=adb.doc('patients/SYNTHETIC-ACCESS-OTHER-20261024');
 const patientRef=adb.doc('patients/SYNTHETIC-CONCURRENCY-20261024');
@@ -139,6 +139,21 @@ try{
  const recurrence=followupOutcome({outcomeClassification:'Recurrence after complete healing',completeHealingDate:'2026-01-10',dateOfRecurrence:'2026-02-01',assessedOn:'2026-03-01',operationDate:'2026-01-01'});assert.equal(recurrence.recurrence,'Yes');
  const linked=summarize([{id:'linked',patient:{operationDate:'2026-01-01'},surgeries:[],proms:[],followups:[{operationId:'initial',completeHealingDate:'2026-01-11'},{operationId:'other',completeHealingDate:'2026-01-05'}]}]);assert.equal(linked.healing.median,10);
  console.log('Owner separation, admin read-only, profile spoofing denial, operation linkage and outcome validation passed');
+ // Firestore memory belongs to a client, not an Auth UID. Account switches need a fresh document/client.
+ let cacheApp,cacheDb;
+ const freshCacheClient=async()=>{cacheApp=initializeApp({projectId:'demo-meditrack',apiKey:'demo-meditrack-key'},'cache-boundary');const auth=getAuth(cacheApp);connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});cacheDb=getFirestore(cacheApp);connectFirestoreEmulator(cacheDb,'127.0.0.1',8080);return auth;};
+ try{
+   let cacheAuth=await freshCacheClient();await signInWithCustomToken(cacheAuth,token);
+   assert.equal((await getDoc(doc(cacheDb,'patients',patientRef.id))).data().userId,uid);
+   await signInWithCustomToken(cacheAuth,await aauth.createCustomToken(b.uid));
+   assert.equal((await getDocFromCache(doc(cacheDb,'patients',patientRef.id))).data().userId,uid);
+   await deleteApp(cacheApp);cacheApp=null;
+   cacheAuth=await freshCacheClient();await signInWithCustomToken(cacheAuth,await aauth.createCustomToken(b.uid));
+   await assert.rejects(()=>getDocFromCache(doc(cacheDb,'patients',patientRef.id)),error=>error.code==='unavailable');
+   await denied(()=>getDoc(doc(cacheDb,'patients',patientRef.id)));
+   console.log('Shared-client Auth cache retention reproduced; fresh client clears it and foreign server access remains denied');
+ }finally{if(cacheApp){await terminate(cacheDb);await deleteApp(cacheApp);}}
+
  // Read the same publications as the UI, independent of any invented test case.
  const literature=[];for(const d of(await adb.collection('patients').where('dataOrigin','==','published_individual_case').get()).docs){const children=await Promise.all(['followups','surgeries','proms'].map(n=>d.ref.collection(n).get()));literature.push({id:d.id,patient:d.data(),followups:children[0].docs.map(x=>x.data()),surgeries:children[1].docs.map(x=>x.data()),proms:children[2].docs.map(x=>x.data())});}
  const result=summarize(literature);assert.equal(result.count,8);assert.equal(result.age.median,23);assert.equal(result.bmi.n,6);assert.equal(result.healing.n,6);assert.equal(result.healing.median,34);assert.equal(result.promRecords,0);

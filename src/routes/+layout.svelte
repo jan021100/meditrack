@@ -45,7 +45,6 @@
     closeAccount();
     clearCaseDraft(); // Remove clinical state before the asynchronous sign-out completes.
     await signOut(auth);
-    goto('/login', { invalidateAll: true });
   }
 
   // External sign-out or account changes must also discard already rendered patient pages.
@@ -54,9 +53,12 @@
     return onAuthStateChanged(auth, user => {
       const uid = user?.uid ?? null;
       if (uid === previousUid) return;
+      const hadIdentity = previousUid !== null;
       previousUid = uid;
       closeAccount(); fullUser = {};
-      goto(user ? '/dashboard' : '/login', { invalidateAll: true, replaceState: true });
+      // A fresh document also discards Firestore’s in-memory cache from the previous account.
+      if (hadIdentity) window.location.replace(user ? '/dashboard' : '/login');
+      else goto(user ? '/dashboard' : '/login', { invalidateAll: true, replaceState: true });
     });
   });
 
@@ -74,7 +76,7 @@
 
 </script>
 
-<svelte:window on:click={dismissAccount} on:keydown={accountKey} />
+<svelte:window on:click={dismissAccount} on:keydown={accountKey} on:pageshow={event => { if (event.persisted) window.location.reload(); }} />
 <a class="skip-link" href="#main-content">Skip to content</a>
 {#if isLocalTest}
   <div role="status" style="padding: 10px 20px; background: #e5eeea; color: #314a40; text-align: center; font-size: 14px;">Local test environment · Test data only · Separate from production patients</div>

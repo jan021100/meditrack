@@ -33,10 +33,12 @@ Desktop visual check completed. Current browser viewport override did not apply 
 
 The responsible organisation and real contact/privacy information must be confirmed by Prof. Doll; do not invent the foundation/association name. Confirm research purpose/legal basis, participant information, controller/processors and international transfers, retention/deletion, institutional/study authorisation and DPIA assessment. Invitations or manual approval do not remove these requirements. Do not approve new clinical collection before those decisions. No blanket GDPR, NIS2, CRA or MDR certification is claimed.
 
-PITR and database deletion protection are currently disabled. Backup/restore drill, provider IAM/admin MFA, incident response, cost/abuse alerts and complete asset-rights review remain open. No paid service was activated.
+PITR and database deletion protection are currently disabled; metadata inspection found no scheduled backups. Backup/restore drill, provider IAM/admin MFA, incident response, cost/abuse alerts and complete asset-rights review remain open. No paid service was activated.
 
 Historical hospitalDays units, incomplete legacy values, non-immutable clinical edits and client-only scientific validation remain integrity limitations; no silent migration. PROMs are exploratory, not a validated total score; analysis is descriptive, without causal risk-factor or recurrence-rate claims.
 
 ## Release and rollback procedure
 
 Publish tested source to main only after rule parity; verify the new Vercel deployment/commit, public login/registration/pending pages, browser headers and absence of the test banner without clinical test writes. Record hosted result in the workspace release report. Roll back the app using Vercel deployment history if required, but retain the tightened data rules; do not restore the unsafe July2025 policy as routine recovery. Existing source/rule snapshots support review, not a tested patient-data backup.
+
+Shared-browser follow-up: logout/direct UID switches replace the document to discard SDK memory; initial sign-in stays within the document so registration can finish its profile write. Restored history documents reload. A local SDK cache regression and browser registration/logout/back flow validate this boundary.

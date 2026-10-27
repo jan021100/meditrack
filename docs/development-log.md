@@ -142,3 +142,9 @@ Release cleanup: browser-created values and three linked child records verified,
 A Firebase CLI login diagnostic unexpectedly returned CLI credentials in tool output. The affected local CLI session was revoked/removed; no credential payload is copied into release files. Application accounts and service-account credentials were not changed. Firebase CLI requires a new interactive login for later cloud CLI operations.
 
 Final route polish: unauthenticated browser navigation to clinical/team pages redirects to sign-in. The check runs only in the browser so server rendering cannot incorrectly discard a persisted Firebase session on a deep-link reload. Server-side Firestore authorization remains the independent data boundary.
+
+## 2026-10-27 — Post-deploy shared-browser cache boundary
+
+Final review identified that a Firebase Auth UID switch does not itself clear Firestore’s client memory cache. Added a regression reproducing an A document still readable from the same client cache after switching to B; a recreated client has no such cached document and B’s server read is denied. Root Auth changes now use full document replacement instead of SPA routing, discarding that memory. Browser-history restoration reloads persisted pages as well. No additional package, clinical data migration or backend access expansion. This complements (and does not replace) the UID-bound draft clearing and Firestore rules.
+
+The fresh-client cache regression passed. Browser registration still completed its profile write, remained pending, and logout returned to sign-in; Back did not restore an authenticated session. Disposable registration account/profile removed. First sign-in deliberately keeps SPA navigation so it cannot interrupt registration’s profile write. Read-only provider metadata additionally found zero scheduled Firestore backups.

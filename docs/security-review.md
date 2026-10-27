@@ -42,3 +42,7 @@ Ownership/profile/admin-write corrections and permanent team approval are now pu
 Known-package audit now has zero critical/high/moderate entries and two low entries. SvelteKit2 low advisories concern enhanced server-form redirects and attacker-controlled prerender cache-control; neither enhanced/server actions nor prerendered routes are used here. Package overrides and exact versions are in package-lock.json; this is not a guarantee against unknown vulnerabilities. Preview deployment builds fail closed; production browser headers are configured in vercel.json and require hosted readback.
 
 Firestore region and index confirmed; database deletion protection/PITR disabled. Provider IAM/admin MFA, complete backup/restore, rate/quota monitoring, incident response and institutional privacy/study approval remain open. See release-readiness.md for the current release boundary.
+
+### Shared-browser memory cache follow-up
+
+Auth UID changes do not clear a Firestore instance’s remote-document memory cache. A local SDK regression reproduces cached A data after switching that same client to B. Application Auth changes now replace the full document; restored browser-history pages reload too. A recreated client has no A cache and B’s server read remains denied. This closes the application’s ordinary shared-browser session boundary; it cannot retract data already copied or protect an unlocked operating-system session from its operator.
