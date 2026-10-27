@@ -6,19 +6,20 @@ import { auth, db } from './firebase';
  * Registers a user with email and password.
  * Returns the full userCredential object (needed to access user.uid).
  */
-export async function registerUser(email: string, password: string) {
+export async function registerUser(email: string, password: string, profile: { title: string; firstName: string; lastName: string; workplace: string }) {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
 
   // Create user profile in Firestore with default role 'user'
   const userDocRef = doc(db, 'users', user.uid);
   await setDoc(userDocRef, {
+    ...profile,
     email,
     role: 'user',
     createdAt: new Date()
   });
 
-  return userCredential; // <-- changed from "user" to full userCredential
+  return userCredential;
 }
 
 /**

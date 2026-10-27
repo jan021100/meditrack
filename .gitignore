@@ -17,8 +17,23 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.test
-+admin-tools/serviceAccountKey.json
 
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Local Firebase admin credentials
+/admin-tools/serviceAccountKey.json
+
+# Local synthetic test state and emulator logs
+/local-testing/data/
+/local-testing/*debug.log
+/firebase-debug.log
+/firestore-debug.log
+/ui-debug.log
+
+/local-testing/runtime/
+/local-testing/config/
+/local-testing/cache/
+
+/pglite-debug.log

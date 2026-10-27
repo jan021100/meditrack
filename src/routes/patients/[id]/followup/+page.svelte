@@ -1,24 +1,24 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import { requireClinicalEditor } from '$lib/access';
   import { goto } from '$app/navigation';
-  import {
-    getFirestore,
-    doc,
-    collection,
-    setDoc,
-    getDocs,
-    serverTimestamp
-  } from 'firebase/firestore';
+  import OperationContext from '$lib/components/OperationContext.svelte';
+  import { assessmentContext, followupOutcome, OUTCOMES } from '$lib/clinical';
+  import { getFirestore, doc, getDoc } from 'firebase/firestore';
+  import { saveDocumentation } from '$lib/firebase/documentation';
   import { get } from 'svelte/store';
 
-  const patientId = get(page).params.id;
+  const patientId = get(page).params.id ?? '';
+  if (!patientId) throw new Error('Missing patient ID.');
 
-  let followUpNumber = '';
   let followUpDate = '';
   let doctorName = '';
+  let assessmentMethod = '';
   let visitReason = '';
   let woundStatus = '';
-  let recurrence = '';
+  let operationId = '';
+  let outcomeClassification = '';
+  let completeHealingDate = '';
   let signsOfRecurrence = '';
   let dateOfRecurrence = '';
   let additionalComments = '';
@@ -28,153 +28,109 @@
   let error = '';
 
   async function saveFollowUp() {
+    if (submitting) return; // Ignore duplicate submissions while the write is pending.
     submitting = true;
     error = '';
     success = false;
 
     try {
+      const user = await requireClinicalEditor();
       const db = getFirestore();
-      const patientRef = doc(db, 'patients', patientId);
-      const followupsRef = collection(patientRef, 'followups');
-
-      // Zähle existierende Follow-Ups
-      const snapshot = await getDocs(followupsRef);
-      const nextNumber = snapshot.size + 1;
-
-      // Speicher als followup1, followup2 usw.
-      const followupDocRef = doc(followupsRef, `followup${nextNumber}`);
-
-      await setDoc(followupDocRef, {
-        followUpNumber: parseInt(followUpNumber),
+      const context = await assessmentContext(db, patientId, operationId, followUpDate);
+      const operation = await getDoc(operationId === 'initial' ? doc(db, 'patients', patientId) : doc(db, 'patients', patientId, 'surgeries', operationId));
+      if (outcomeClassification === 'Persistent disease / never healed' && woundStatus === 'Completely healed') throw new Error('A completely healed wound cannot be classified as never healed.');
+      const outcome = followupOutcome({ outcomeClassification, completeHealingDate, dateOfRecurrence, assessedOn: followUpDate, operationDate: operation.data()?.operationDate });
+      await saveDocumentation(db, patientId, 'followups', {
+        ...context,
+        ...outcome,
+        userId: user.uid,
         followUpDate,
         doctorName,
+        assessmentMethod,
         visitReason,
         woundStatus,
-        recurrence,
         signsOfRecurrence,
-        dateOfRecurrence,
-        additionalComments,
-        createdAt: serverTimestamp()
+        additionalComments
       });
 
       success = true;
       goto(`/patients/${patientId}`);
     } catch (err) {
       console.error(err);
-      error = 'Error saving follow-up.';
+      error = err instanceof Error && !(err as { code?: string }).code ? err.message : 'Error saving follow-up. Please try again.';
     } finally {
       submitting = false;
     }
   }
 </script>
 
-<style>
-  .form-container {
-    max-width: 700px;
-    margin: 3rem auto;
-    padding: 2rem;
-    border-radius: 12px;
-    background-color: #f5f5f3;
-    font-family: 'Helvetica Neue', sans-serif;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }
-  label {
-    display: block;
-    margin-top: 1rem;
-    font-weight: 500;
-  }
-  input, select, textarea {
-    width: 100%;
-    padding: 0.75rem;
-    margin-top: 0.25rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-  }
-  button {
-    margin-top: 2rem;
-    padding: 0.75rem 1.5rem;
-    background-color: #000;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #333;
-  }
-  .success {
-    color: green;
-    margin-top: 1rem;
-  }
-  .error {
-    color: red;
-    margin-top: 1rem;
-  }
-</style>
+<svelte:head><title>Follow-up · MediTrack</title></svelte:head>
+<div class="form-page">
+  <a class="back-link" href={`/patients/${patientId}`}>Back to patient</a>
+  <div class="page-heading"><div><h1>Follow-up</h1><p>Record the examination, wound status and recurrence findings.</p></div></div>
+  <form class="clinical-form" on:submit|preventDefault={saveFollowUp}>
+    <div class="form-grid">
+      <OperationContext {patientId} bind:operationId />
 
-<div class="form-container">
-  <h1>📆 Follow-Up Form</h1>
+  <p class="field-hint full-width">The follow-up number is assigned automatically when saved.</p>
 
-  <label>Number of Follow-Up</label>
-  <input bind:value={followUpNumber} type="number" min="1" />
+  <div class="form-field"><label for="followUpDate">Follow-up date</label>
+  <input id="followUpDate" bind:value={followUpDate} type="date" required /></div>
 
-  <label>Date of Follow-Up</label>
-  <input bind:value={followUpDate} type="date" />
+  <div class="form-field"><label for="doctorName">Examining doctor</label>
+  <input id="doctorName" bind:value={doctorName} type="text" /></div>
 
-  <label>Doctor Performing Follow-Up</label>
-  <input bind:value={doctorName} type="text" />
-
-  <label>Reason for Patient Visit</label>
-  <select bind:value={visitReason}>
+  <div class="form-field"><label for="assessmentMethod">Assessment method</label><select id="assessmentMethod" bind:value={assessmentMethod} required><option value="">Select…</option><option>In-person examination</option><option>Video consultation</option><option>Telephone / patient report</option><option>Medical records review</option></select></div>
+  <div class="form-field"><label for="visitReason">Reason for visit</label>
+  <select id="visitReason" bind:value={visitReason}>
     <option value="">Select...</option>
     <option value="Invited">Invited</option>
     <option value="Sent by GP">Sent by GP</option>
     <option value="Self">Self</option>
-  </select>
+  </select></div>
 
-  <label>Wound Status at Follow-Up</label>
-  <select bind:value={woundStatus}>
+  <div class="form-field"><label for="woundStatus">Wound status</label>
+  <select id="woundStatus" bind:value={woundStatus}>
     <option value="">Select...</option>
     <option value="Completely healed">Completely healed</option>
     <option value="Partially open">Partially open</option>
     <option value="Not healed at all">Not healed at all</option>
     <option value="New sinus tract observed">New sinus tract observed</option>
     <option value="Other">Other</option>
-  </select>
+  </select></div>
 
-  <label>PSD Recurrence?</label>
-  <select bind:value={recurrence}>
-    <option value="">Select...</option>
-    <option value="Yes">Yes</option>
-    <option value="No">No</option>
-  </select>
-
-  <label>Signs of Recurrence</label>
-  <select bind:value={signsOfRecurrence}>
+  <div class="form-field full-width"><label for="outcomeClassification">Disease course after this operation</label>
+  <select id="outcomeClassification" bind:value={outcomeClassification} required><option value="">Select…</option>{#each OUTCOMES as outcome}<option value={outcome}>{outcome}</option>{/each}</select>
+  <p class="field-hint">Recurrence means disease returning after complete healing and a disease-free interval. Disease that never healed is persistent, not a recurrence.</p></div>
+  <div class="form-field"><label for="completeHealingDate">First complete-healing date (if established)</label><input id="completeHealingDate" type="date" bind:value={completeHealingDate} required={outcomeClassification === 'Recurrence after complete healing'} /></div>
+  <p class="field-hint full-width">Working definition: fully epithelialised and dry, with no discharge or dressing needed. Record the observed date; use uncertain rather than inventing a date.</p>
+  <div class="form-field"><label for="signsOfRecurrence">Signs of recurrence</label>
+  <select id="signsOfRecurrence" bind:value={signsOfRecurrence}>
     <option value="">Select...</option>
     <option value="Retention">Retention</option>
     <option value="Secretion">Secretion</option>
     <option value="New Sinus">New Sinus</option>
     <option value="New Wound with Hair">New Wound with Hair</option>
     <option value="Other">Other</option>
-  </select>
+  </select></div>
 
-  <label>Date of Recurrence</label>
-  <input bind:value={dateOfRecurrence} type="date" />
+  <div class="form-field"><label for="dateOfRecurrence">Recurrence date</label>
+  <input id="dateOfRecurrence" bind:value={dateOfRecurrence} type="date" required={outcomeClassification === 'Recurrence after complete healing'} /></div>
 
-  <label>Additional Comments</label>
-  <textarea rows="3" bind:value={additionalComments}></textarea>
+  <div class="form-field full-width"><label for="additionalComments">Additional comments</label>
+  <textarea id="additionalComments" rows="3" bind:value={additionalComments}></textarea></div>
 
-  <button on:click={saveFollowUp} disabled={submitting}>
-    {submitting ? 'Saving...' : '💾 Save Follow-Up'}
+  </div>
+    <div class="form-footer"><button type="submit" class="primary-action" disabled={submitting}>
+    {submitting ? 'Saving...' : ' Save follow-up'}
   </button>
 
   {#if success}
-    <p class="success">✅ Follow-up saved!</p>
+    <p class="feedback success" role="status"> Follow-up saved!</p>
   {/if}
   {#if error}
-    <p class="error">{error}</p>
+    <p class="feedback error" role="alert">{error}</p>
   {/if}
+</div>
+  </form>
 </div>

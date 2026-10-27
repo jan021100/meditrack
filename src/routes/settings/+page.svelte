@@ -1,60 +1,14 @@
-<script lang="ts">
-  import { goto } from '$app/navigation';
-
-  function backToDashboard() {
-    goto('/dashboard');
-  }
-</script>
-
-<style>
-  .settings-container {
-    max-width: 600px;
-    margin: 2rem auto;
-    font-family: 'Helvetica Neue', sans-serif;
-  }
-
-  h1 {
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .back-btn {
-    background: transparent;
-    color: #000;
-    border: 1px solid #aaa;
-    border-radius: 6px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s ease;
-    margin-bottom: 1.5rem;
-  }
-
-  .back-btn:hover {
-    background: #f0f0f0;
-  }
-
-  .settings-placeholder {
-    font-size: 1rem;
-    color: #555;
-    margin-top: 1rem;
-  }
-</style>
-
-<div class="settings-container">
-  <button class="back-btn" on:click={backToDashboard}>← Back</button>
-  <h1>⚙️ Settings</h1>
-
-  <div class="settings-placeholder">
-    This is your settings page. In the future, you could add:
-    <ul>
-      <li>Language preference</li>
-      <li>Theme (light/dark)</li>
-      <li>Email notifications</li>
-      <li>Password change</li>
-      <li>Data export</li>
-      <li>Danger zone for account deletion</li>
-    </ul>
-  </div>
+<svelte:head><title>Settings · MediTrack</title></svelte:head>
+<div class="form-page">
+  <a class="back-link" href="/dashboard">Back to patients</a>
+  <div class="page-heading"><div><h1>Settings</h1><p>Manage your MediTrack account.</p></div></div>
+  <section><div><h2>Professional profile</h2><p>Update your name, workplace and avatar.</p></div><a class="secondary-action" href="/profile">Edit profile</a></section>
+  <section><div><h2>More settings</h2><p>No additional account settings are available yet.</p></div></section>
 </div>
+<style>
+  section { display: flex; gap: 24px; align-items: center; justify-content: space-between; padding: 28px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  p { margin: 0; color: var(--muted); line-height: 1.6; }
+  .secondary-action { flex-shrink: 0; }
+  @media(max-width:600px) { section { align-items: flex-start; flex-direction: column; } }
+</style>

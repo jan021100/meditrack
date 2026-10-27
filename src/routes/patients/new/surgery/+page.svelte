@@ -1,12 +1,12 @@
 <script lang="ts">
+  import { requireClinicalEditor } from '$lib/access';
   import { goto } from '$app/navigation';
-  import { getAuth } from 'firebase/auth';
   import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-  import { caseData } from '$lib/stores/caseStore';
+  import { caseData, clearCaseDraft, getCaseDraftFor, type BaselineData } from '$lib/stores/caseStore';
   import { onDestroy } from 'svelte';
 
-  let baseData = {};
-  const unsubscribe = caseData.subscribe(value => baseData = value);
+  let baseData: Partial<BaselineData> = {};
+  const unsubscribe = caseData.subscribe(value => baseData = value?.baseline ?? {});
   onDestroy(() => unsubscribe());
 
   let hospitalTown = '';
@@ -41,24 +41,27 @@
   let success = false;
 
   async function saveCase() {
+    if (submitting) return;
+    // The baseline draft lives in memory. Reloading must never save an empty patient.
+    if (!baseData.birthDate || !baseData.sex) {
+      error = 'Baseline information is missing. Please start again from the baseline form.';
+      return;
+    }
     submitting = true;
     error = '';
     try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user) {
-        error = 'You must be logged in.';
-        submitting = false;
-        return;
-      }
+      const user = await requireClinicalEditor();
+      const ownedBaseline = getCaseDraftFor(user.uid);
 
       const db = getFirestore();
       const patientsRef = collection(db, 'patients');
 
-      const { followups, surgeries, proms, ...cleanBaseData } = baseData;
 
+// Baseline and operation comments describe different events; keep both.
+const { comments: baselineComments = '', ...baseline } = ownedBaseline;
 await addDoc(patientsRef, {
-  ...cleanBaseData,
+  ...baseline,
+  baselineComments,
   hospitalTown,
   hospitalCountry,
   hospitalDepartment,
@@ -89,8 +92,10 @@ await addDoc(patientsRef, {
   userId: user.uid
 });
 
-      success = true;
-      goto('/dashboard');
+      if (clearCaseDraft(user.uid)) {
+        success = true;
+        goto('/dashboard');
+      }
     } catch (err) {
       error = 'Error saving case.';
       console.error(err);
@@ -100,120 +105,81 @@ await addDoc(patientsRef, {
   }
 </script>
 
-<style>
-  .form-container {
-    max-width: 720px;
-    margin: 3rem auto;
-    padding: 2rem;
-    border-radius: 12px;
-    background-color: #f5f5f3;
-    font-family: 'Helvetica Neue', sans-serif;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }
-  label {
-    display: block;
-    margin-top: 1rem;
-    font-weight: 500;
-  }
-  input, select, textarea {
-    width: 100%;
-    padding: 0.75rem;
-    margin-top: 0.25rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-  }
-  button {
-    margin-top: 2rem;
-    padding: 0.75rem 1.5rem;
-    background-color: #000;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #333;
-  }
-  .success {
-    color: green;
-    margin-top: 1rem;
-  }
-  .error {
-    color: red;
-    margin-top: 1rem;
-  }
-</style>
+<svelte:head><title>Initial surgery · MediTrack</title></svelte:head>
+<div class="form-page">
+  <a class="back-link" href="/dashboard">Back to patients</a>
+  <div class="page-heading"><div><h1>Initial surgery</h1><p>Complete the initial operation to save this patient record.</p></div></div>
+  {#if !baseData.birthDate || !baseData.sex}
+    <p class="feedback error" role="alert">Baseline information is missing after a reload or direct visit. <a href="/patients/new" data-sveltekit-reload>Return to baseline</a> to start again.</p>
+  {/if}
+  <form class="clinical-form" on:submit|preventDefault={saveCase}>
+    <div class="form-grid">
 
-<div class="form-container">
-  <h1>Surgery Form</h1>
 
-  <!-- 🩺 Section 1: Patient Information -->
-  <h2>1. Patient Information</h2>
+  <h2 class="form-section-title">Hospital and study</h2>
 
-  <label>Hospital Town</label>
-  <input bind:value={hospitalTown} />
+  <div class="form-field"><label for="hospitalTown">Hospital town</label>
+  <input id="hospitalTown" bind:value={hospitalTown} /></div>
 
-  <label>Hospital Country</label>
-  <input bind:value={hospitalCountry} />
+  <div class="form-field"><label for="hospitalCountry">Hospital country</label>
+  <input id="hospitalCountry" bind:value={hospitalCountry} /></div>
 
-  <label>Hospital Department</label>
-  <select bind:value={hospitalDepartment}>
+  <div class="form-field"><label for="hospitalDepartment">Hospital department</label>
+  <select id="hospitalDepartment" bind:value={hospitalDepartment}>
     <option value="">Select...</option>
     <option value="Surgery">Surgery</option>
     <option value="Dermatology">Dermatology</option>
     <option value="Other">Other</option>
-  </select>
+  </select></div>
   {#if hospitalDepartment === 'Other'}
-    <label>Other Department</label>
-    <input bind:value={otherDepartment} />
+    <div class="form-field"><label for="otherDepartment">Other department</label>
+    <input id="otherDepartment" bind:value={otherDepartment} /></div>
   {/if}
 
-  <label>Study Type</label>
-  <select bind:value={studyType}>
+  <div class="form-field"><label for="studyType">Study type</label>
+  <select id="studyType" bind:value={studyType}>
     <option value="">Select...</option>
     <option value="Prospective">Prospective</option>
     <option value="Retrospective">Retrospective</option>
     <option value="Not applicable">Not applicable</option>
-  </select>
+  </select></div>
 
-  <!-- 🧑‍⚕️ Section 2: Surgeon Information -->
-  <h2>2. Surgeon Information</h2>
 
-  <label>Surgeon Name</label>
-  <input bind:value={surgeonName} />
+  <h2 class="form-section-title">Surgeon</h2>
 
-  <label>Surgeon Qualification</label>
-  <select bind:value={surgeonQualification}>
+  <div class="form-field"><label for="surgeonName">Surgeon name</label>
+  <input id="surgeonName" bind:value={surgeonName} /></div>
+
+  <div class="form-field"><label for="surgeonQualification">Surgeon qualification</label>
+  <select id="surgeonQualification" bind:value={surgeonQualification}>
     <option value="">Select...</option>
     <option value="Resident">Resident</option>
     <option value="Specialist">Specialist</option>
     <option value="Consultant">Consultant</option>
     <option value="Other">Other</option>
-  </select>
+  </select></div>
 
-  <label>Operations per Department per Year</label>
-  <input type="number" bind:value={opsByDept} min="0" />
+  <div class="form-field"><label for="opsByDept">Operations per department per year</label>
+  <input id="opsByDept" type="number" bind:value={opsByDept} min="0" /></div>
 
-  <label>Operations by Surgeon per Year</label>
-  <input type="number" bind:value={opsBySurgeon} min="0" />
+  <div class="form-field"><label for="opsBySurgeon">Operations by surgeon per year</label>
+  <input id="opsBySurgeon" type="number" bind:value={opsBySurgeon} min="0" /></div>
 
-  <!-- 🛠️ Section 3: Operation Information -->
-  <h2>3. Operation Information</h2>
 
-  <label>Operation Date</label>
-  <input type="date" bind:value={operationDate} />
+  <h2 class="form-section-title">Procedure and recovery</h2>
 
-  <label>Abscess Present?</label>
-  <select bind:value={abscess}>
+  <div class="form-field"><label for="operationDate">Operation date</label>
+  <input id="operationDate" type="date" bind:value={operationDate} /></div>
+
+  <div class="form-field"><label for="abscess">Abscess present?</label>
+  <select id="abscess" bind:value={abscess}>
     <option value="">Select...</option>
     <option value="Yes">Yes</option>
     <option value="No">No</option>
-  </select>
+  </select></div>
 
-  <label>Operation Technique</label>
-  <select bind:value={operationTechnique}>
+  <div class="form-field"><label for="operationTechnique">Operation technique</label>
+  <select id="operationTechnique" bind:value={operationTechnique}>
     <option value="">Select...</option>
     <option value="Flap">Flap</option>
     <option value="Pit Picking">Pit Picking</option>
@@ -223,98 +189,101 @@ await addDoc(patientsRef, {
     <option value="Primary Wound Management (PVM)">Primary Wound Management (PVM)</option>
     <option value="Primary Wound Closure (PVA)">Primary Wound Closure (PVA)</option>
     <option value="Other">Other</option>
-  </select>
+  </select></div>
   {#if operationTechnique === 'Other'}
-    <label>Other Technique</label>
-    <input bind:value={otherTechnique} />
+    <div class="form-field"><label for="otherTechnique">Other technique</label>
+    <input id="otherTechnique" bind:value={otherTechnique} /></div>
   {/if}
 
-  <label>Flap Technique</label>
-  <select bind:value={flapTechnique}>
+  <div class="form-field"><label for="flapTechnique">Flap technique</label>
+  <select id="flapTechnique" bind:value={flapTechnique}>
     <option value="">Select...</option>
     <option value="Limberg">Limberg</option>
     <option value="Karydakis">Karydakis</option>
     <option value="Modified Karydakis">Modified Karydakis</option>
     <option value="Bascom">Bascom</option>
     <option value="Other">Other</option>
-  </select>
+  </select></div>
   {#if flapTechnique === 'Other'}
-    <label>Other Flap</label>
-    <input bind:value={otherFlap} />
+    <div class="form-field"><label for="otherFlap">Other flap technique</label>
+    <input id="otherFlap" bind:value={otherFlap} /></div>
   {/if}
 
-  <label>Dye Injected?</label>
-  <select bind:value={dyeInjected}>
+  <div class="form-field"><label for="dyeInjected">Dye injected?</label>
+  <select id="dyeInjected" bind:value={dyeInjected}>
     <option value="">Select...</option>
     <option value="Yes">Yes</option>
     <option value="No">No</option>
-  </select>
+  </select></div>
 
-  <label>Dye Type</label>
-  <select bind:value={dyeType}>
+  <div class="form-field"><label for="dyeType">Dye type</label>
+  <select id="dyeType" bind:value={dyeType}>
     <option value="">Select...</option>
     <option value="Methylene Blue">Methylene Blue</option>
     <option value="Other">Other</option>
-  </select>
+  </select></div>
   {#if dyeType === 'Other'}
-    <label>Other Dye</label>
-    <input bind:value={otherDye} />
+    <div class="form-field"><label for="otherDye">Other dye</label>
+    <input id="otherDye" bind:value={otherDye} /></div>
   {/if}
 
-  <label>Wound Closure</label>
-  <select bind:value={woundClosure}>
+  <div class="form-field"><label for="woundClosure">Wound closure</label>
+  <select id="woundClosure" bind:value={woundClosure}>
     <option value="">Select...</option>
     <option value="Open">Open</option>
     <option value="Primary Closure">Primary Closure</option>
     <option value="Secondary Closure">Secondary Closure</option>
     <option value="Other">Other</option>
-  </select>
+  </select></div>
 
-  <label>Suture Localization</label>
-  <select bind:value={sutureLocalization}>
+  <div class="form-field"><label for="sutureLocalization">Suture location</label>
+  <select id="sutureLocalization" bind:value={sutureLocalization}>
     <option value="">Select...</option>
     <option value="Midline">Midline</option>
     <option value="Off-midline">Off-midline</option>
-  </select>
+  </select></div>
 
-  <label>Anesthesia Type</label>
-  <select bind:value={anesthesiaType}>
+  <div class="form-field"><label for="anesthesiaType">Anesthesia type</label>
+  <select id="anesthesiaType" bind:value={anesthesiaType}>
     <option value="">Select...</option>
     <option value="Local">Local</option>
     <option value="Spinal">Spinal</option>
     <option value="General">General</option>
     <option value="Other">Other</option>
-  </select>
+  </select></div>
 
-  <label>Hospitalization Form</label>
-  <select bind:value={hospitalizationForm}>
+  <div class="form-field"><label for="hospitalizationForm">Hospitalization</label>
+  <select id="hospitalizationForm" bind:value={hospitalizationForm}>
     <option value="">Select...</option>
     <option value="Inpatient">Inpatient</option>
     <option value="Outpatient">Outpatient</option>
     <option value="Same-day discharge">Same-day discharge</option>
-  </select>
+  </select></div>
 
-  <label>Nights Stayed at Hospital (0 = Outpatient)</label>
-  <input type="number" bind:value={hospitalDays} min="0" />
+  <div class="form-field"><label for="hospitalDays">Nights Stayed at Hospital (0 = Outpatient)</label>
+  <input id="hospitalDays" type="number" bind:value={hospitalDays} min="0" /></div>
 
-  <label>Date Wound Closed</label>
-  <input type="date" bind:value={dateWoundClosed} />
+  <div class="form-field"><label for="dateWoundClosed">Date of wound closure</label>
+  <input id="dateWoundClosed" type="date" bind:value={dateWoundClosed} /></div>
 
-  <label>Date Healed</label>
-  <input type="date" bind:value={dateHealed} />
+  <div class="form-field"><label for="dateHealed">Date healed</label>
+  <input id="dateHealed" type="date" bind:value={dateHealed} /></div>
 
-  <label>Additional Comments</label>
-  <textarea rows="3" bind:value={comments}></textarea>
+  <div class="form-field full-width"><label for="comments">Additional comments</label>
+  <textarea id="comments" rows="3" bind:value={comments}></textarea></div>
 
-  <button on:click={saveCase} disabled={submitting}>
-    {submitting ? 'Saving...' : '💾 Save Case'}
+  </div>
+    <div class="form-footer"><button type="submit" class="primary-action" disabled={submitting || !baseData.birthDate || !baseData.sex}>
+    {submitting ? 'Saving...' : ' Save patient'}
   </button>
 
   {#if success}
-    <p class="success">✅ Case successfully saved!</p>
+    <p class="feedback success" role="status"> Case successfully saved!</p>
   {/if}
 
   {#if error}
-    <p class="error">{error}</p>
+    <p class="feedback error" role="alert">{error}</p>
   {/if}
+</div>
+  </form>
 </div>

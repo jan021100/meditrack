@@ -10,154 +10,116 @@
     Timestamp
   } from 'firebase/firestore';
   import { getAuth } from 'firebase/auth';
-  import { goto } from '$app/navigation';
+  import { getAccess, authorLabel } from '$lib/access';
+  import PatientList from '$lib/components/PatientList.svelte';
 
   const db = getFirestore();
+  const auth = getAuth();
+
   let patients: {
     id: string;
     sex?: string;
     birthDate?: string;
     operationDate?: string;
     createdAt?: Date | null;
+    enteredBy?: string;
   }[] = [];
 
   let loading = true;
+  let error = '';
+
+  function retryLoad() {
+    loading = true;
+    error = '';
+    fetchPatients();
+  }
+  let userRole: string | null = null;
 
   async function fetchPatients() {
-    const auth = getAuth();
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) {
+      error = 'Please log in to view your patients.';
+      loading = false;
+      return;
+    }
 
-    const q = query(
-      collection(db, 'patients'),
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc')
-    );
+    try {
+      const { isAdmin } = await getAccess(user);
+      userRole = isAdmin ? 'admin' : 'user';
 
-    const snapshot = await getDocs(q);
-    patients = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        sex: data.sex,
-        birthDate: data.birthDate,
-        operationDate: data.operationDate,
-        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : null
-      };
-    });
+      let q;
+      if (userRole === 'admin') {
+        q = query(collection(db, 'patients'));
+      } else {
+        q = query(
+          collection(db, 'patients'),
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc')
+        );
+      }
+
+      const snapshot = await getDocs(q);
+
+      const authors = new Map<string, Promise<string>>();
+      patients = await Promise.all(snapshot.docs.map(async doc => {
+        const data = doc.data();
+        if (isAdmin && typeof data.userId === 'string' && !authors.has(data.userId)) authors.set(data.userId, authorLabel(db, data.userId));
+        return {
+          id: doc.id,
+          sex: data.sex,
+          enteredBy: isAdmin ? await authors.get(data.userId) : undefined,
+          birthDate: data.birthDate,
+          operationDate: data.operationDate,
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : null
+        };
+      }));
+    } catch (err) {
+      error = 'We could not load the patient list. Please try again.';
+      console.error('Error fetching patients:', err);
+    }
 
     loading = false;
-  }
-
-  function createPatient() {
-    goto('/patients/new');
-  }
-
-  function formatDate(date: Date | null): string {
-    if (!date) return '-';
-    return date.toLocaleDateString('en-DE', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
   }
 
   onMount(fetchPatients);
 </script>
 
-<style>
-  .dashboard {
-    max-width: 900px;
-    margin: 3rem auto;
-    font-family: 'Helvetica Neue', sans-serif;
-  }
+<svelte:head><title>Patients · MediTrack</title></svelte:head>
 
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
-
-  .add-btn {
-    background-color: #000;
-    color: #fff;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 2rem;
-  }
-
-  .add-btn:hover {
-    background-color: #333;
-  }
-
-  .patient-list {
-    list-style: none;
-    padding: 0;
-  }
-
-  .patient-card {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1rem;
-    background: #f5f5f3;
-    cursor: pointer;
-    transition: background 0.2s ease;
-  }
-
-  .patient-card:hover {
-    background: #e9e9e6;
-  }
-
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #555;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .info-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
-    font-size: 1rem;
-  }
-
-  .info-label {
-    font-weight: 600;
-  }
-</style>
-
-<div class="dashboard">
-  <h1>📋 Your Patients</h1>
-
-  <button class="add-btn" on:click={createPatient}>➕ Add New Patient</button>
-
+<div class="page">
+  <div class="page-heading">
+    <div>
+      <h1>{userRole === 'admin' ? 'All patients' : 'Your patients'}</h1>
+      <p>Patient records and treatment follow-up.</p>
+    </div>
+    {#if userRole === 'user'}<a class="primary-action" href="/patients/new">New patient</a>{/if}
+  </div>
   {#if loading}
-    <p>⏳ Loading...</p>
+    <div class="list-state" role="status">Loading patient records…</div>
+  {:else if error}
+    <div class="list-state" role="alert">
+      <h2>Patient list unavailable</h2>
+      <p>{error}</p>
+      <button type="button" class="retry" on:click={retryLoad}>Try again</button>
+    </div>
   {:else if patients.length === 0}
-    <p>No patients yet.</p>
+    <div class="list-state">
+      <h2>No patient records yet</h2>
+      <p>Your patient records will appear here.</p>
+    </div>
   {:else}
-    <ul class="patient-list">
-      {#each patients as patient}
-        <li>
-          <div class="patient-card" on:click={() => goto(`/patients/${patient.id}`)}>
-            <div class="card-header">
-              <div>🆔 Case ID: {patient.id}</div>
-              <div>{formatDate(patient.createdAt)}</div>
-            </div>
-            <div class="info-row">
-              <div><span class="info-label">Sex:</span> {patient.sex || '-'}</div>
-              <div><span class="info-label">Birth Date:</span> {patient.birthDate || '-'}</div>
-              <div><span class="info-label">Initial OP:</span> {patient.operationDate || '-'}</div>
-            </div>
-          </div>
-        </li>
-      {/each}
-    </ul>
+    <p class="record-count">{patients.length} {patients.length === 1 ? 'patient record' : 'patient records'}</p>
+    <PatientList {patients} />
   {/if}
 </div>
+
+<style>
+  .record-count { margin: 0 0 24px; color: var(--muted); font-size: 13px; }
+  .list-state { padding: 48px 0; border-top: 1px solid var(--line); color: var(--muted); line-height: 1.6; }
+  .list-state h2 { margin: 0 0 10px; color: var(--ink); font-size: 20px; font-weight: 500; }
+  .list-state p { margin: 0; }
+  .retry { margin-top: 20px; padding: 10px 16px; min-height: 44px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: var(--surface); cursor: pointer; }
+  @media (hover: hover) and (pointer: fine) {
+    .retry:hover { background: var(--hover); }
+  }
+</style>

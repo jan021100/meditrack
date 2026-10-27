@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "datasetId": "published-psd-cases-v1",
+  "extractedAt": "2026-10-23",
+  "purpose": "Local software testing using published individual case facts; not a representative clinical cohort.",
+  "sources": {
+    "granuloma": {
+      "title": "Pilonidal granuloma formation after an incision and drainage procedure is associated with retained hair within the sinus – A case series",
+      "authors": "Nepomuceno H; Abrajano C; Chiu B",
+      "doi": "10.1016/j.ijscr.2024.110500",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11541939/",
+      "license": "CC BY-NC-ND 4.0; factual extraction only, no images or article text copied",
+      "year": 2024
+    },
+    "npwt": {
+      "title": "Negative Pressure Wound Therapy as an Alternative to Flap Reconstruction in an Extensive 16.5 × 11 cm Pilonidal Sinus Excision: A Case Report",
+      "authors": "Maden A et al.",
+      "doi": "10.7759/cureus.91064",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12470606/",
+      "license": "CC BY 4.0",
+      "year": 2025
+    },
+    "laser-adm": {
+      "title": "Exploratory pilot study of minimally invasive therapy: laser ablation combined with acellular dermal matrix implantation for recurrent sacrococcygeal pilonidal disease",
+      "authors": "Li Z et al.",
+      "doi": "10.3389/fbioe.2026.1792099",
+      "url": "https://www.frontiersin.org/journals/bioengineering-and-biotechnology/articles/10.3389/fbioe.2026.1792099/full",
+      "license": "CC BY",
+      "year": 2026
+    }
+  },
+  "cases": [
+    {
+      "id": "LIT-2024-GRANULOMA-1",
+      "sourceKey": "granuloma",
+      "sourceCase": "Case presentation 1",
+      "sourceLocator": "Case presentation 1; Figure 1",
+      "patient": {
+        "ageAtPresentation": 16,
+        "sex": "Male",
+        "operationTechnique": "Incision and drainage",
+        "abscess": "Yes",
+        "anatomicalSite": "Gluteal cleft"
+      },
+      "surgeries": [
+        {
+          "id": "pit-picking",
+          "operationTechnique": "Pit picking with granuloma excision",
+          "sourceEventOrder": 1,
+          "sourceLocator": "Case presentation 1"
+        }
+      ],
+      "followups": [],
+      "qualityNotes": [
+        "No calendar dates or numeric PROM scores reported.",
+        "Healing outcome not reported for case 1."
+      ]
+    },
+    {
+      "id": "LIT-2024-GRANULOMA-2",
+      "sourceKey": "granuloma",
+      "sourceCase": "Case presentation 2",
+      "sourceLocator": "Case presentation 2; Figure 2",
+      "patient": {
+        "ageAtPresentation": 15,
+        "sex": "Male",
+        "operationTechnique": "Incision and drainage",
+        "abscess": "Yes",
+        "anatomicalSite": "Gluteal cleft"
+      },
+      "surgeries": [
+        {
+          "id": "pit-picking",
+          "operationTechnique": "Pit picking with granuloma excision",
+          "sourceEventOrder": 1,
+          "sourceLocator": "Case presentation 2"
+        }
+      ],
+      "followups": [
+        {
+          "id": "reported-outcome",
+          "woundStatus": "Healed",
+          "outcomeNotes": "Asymptomatic; assessment interval not reported.",
+          "sourceLocator": "Case presentation 2",
+          "sourceEventOrder": 2
+        }
+      ],
+      "qualityNotes": [
+        "No calendar dates or numeric PROM scores reported.",
+        "Postoperative observation duration unknown."
+      ]
+    },
+    {
+      "id": "LIT-2025-NPWT-1",
+      "sourceKey": "npwt",
+      "sourceCase": "Single case",
+      "sourceLocator": "Case presentation; Table 1",
+      "patient": {
+        "ageAtPresentation": 21,
+        "sex": "Male",
+        "bmi": 23.8,
+        "diseaseDurationMonths": 30,
+        "previousSurgeryDetails": "Multiple previous drainage procedures; exact number unknown.",
+        "operationTechnique": "Wide excision with negative pressure wound therapy",
+        "anesthesiaType": "Spinal",
+        "abscess": "Yes",
+        "woundClosure": "Secondary intention",
+        "anatomicalSite": "Sacrococcygeal"
+      },
+      "surgeries": [],
+      "followups": [
+        {
+          "id": "day90",
+          "followUpIntervalDays": 90,
+          "woundStatus": "Complete epithelialization reported",
+          "sourceLocator": "Abstract; Table 1",
+          "sourceEventOrder": 1
+        },
+        {
+          "id": "month6",
+          "followUpIntervalMonths": 6,
+          "woundStatus": "Healed",
+          "recurrence": "No",
+          "sourceLocator": "Case presentation",
+          "sourceEventOrder": 2
+        },
+        {
+          "id": "year1",
+          "followUpIntervalMonths": 12,
+          "recurrence": "No",
+          "assessmentMethod": "Telephone",
+          "sourceLocator": "Case presentation",
+          "sourceEventOrder": 3
+        },
+        {
+          "id": "year2",
+          "followUpIntervalMonths": 24,
+          "recurrence": "No",
+          "assessmentMethod": "Telephone",
+          "sourceLocator": "Case presentation",
+          "sourceEventOrder": 4
+        }
+      ],
+      "qualityNotes": [
+        "Published index procedure is not the first lifetime operation.",
+        "Day 90 table retains wound dimensions despite describing closure; exact healing definition is ambiguous."
+      ]
+    },
+    {
+      "id": "LIT-2026-LASER-ADM-1",
+      "sourceKey": "laser-adm",
+      "sourceCase": "Table 2, patient 1",
+      "sourceLocator": "Table 2, row 1; Methods (shared procedure)",
+      "patient": {
+        "ageAtPresentation": 25,
+        "sex": "Female",
+        "bmi": 30.47,
+        "diseaseDurationMonths": 48,
+        "operationTechnique": "Laser ablation with acellular dermal matrix implantation",
+        "anatomicalSite": "Sacrococcygeal"
+      },
+      "surgeries": [],
+      "followups": [
+        {
+          "id": "healing",
+          "followUpIntervalDays": 30,
+          "woundStatus": "Healed",
+          "sourceLocator": "Table 2, row 1",
+          "sourceEventOrder": 1
+        }
+      ],
+      "qualityNotes": [
+        "Source has inconsistent summary percentages, follow-up units/durations and median BMI. Individual Table 2 values retained without correction.",
+        "No patient-specific follow-up length, recurrence assessment time or pain scores imported.",
+        "Published index procedure is not necessarily the first lifetime operation."
+      ]
+    },
+    {
+      "id": "LIT-2026-LASER-ADM-2",
+      "sourceKey": "laser-adm",
+      "sourceCase": "Table 2, patient 2",
+      "sourceLocator": "Table 2, row 2; Methods (shared procedure)",
+      "patient": {
+        "ageAtPresentation": 21,
+        "sex": "Male",
+        "bmi": 27.76,
+        "diseaseDurationMonths": 12,
+        "operationTechnique": "Laser ablation with acellular dermal matrix implantation",
+        "anatomicalSite": "Sacrococcygeal"
+      },
+      "surgeries": [],
+      "followups": [
+        {
+          "id": "healing",
+          "followUpIntervalDays": 34,
+          "woundStatus": "Healed",
+          "sourceLocator": "Table 2, row 2",
+          "sourceEventOrder": 1
+        }
+      ],
+      "qualityNotes": [
+        "Source has inconsistent summary percentages, follow-up units/durations and median BMI. Individual Table 2 values retained without correction.",
+        "No patient-specific follow-up length, recurrence assessment time or pain scores imported.",
+        "Published index procedure is not necessarily the first lifetime operation."
+      ]
+    },
+    {
+      "id": "LIT-2026-LASER-ADM-3",
+      "sourceKey": "laser-adm",
+      "sourceCase": "Table 2, patient 3",
+      "sourceLocator": "Table 2, row 3; Methods (shared procedure)",
+      "patient": {
+        "ageAtPresentation": 32,
+        "sex": "Male",
+        "bmi": 22.4,
+        "diseaseDurationMonths": 108,
+        "operationTechnique": "Laser ablation with acellular dermal matrix implantation",
+        "anatomicalSite": "Sacrococcygeal"
+      },
+      "surgeries": [],
+      "followups": [
+        {
+          "id": "healing",
+          "followUpIntervalDays": 31,
+          "woundStatus": "Healed",
+          "sourceLocator": "Table 2, row 3",
+          "sourceEventOrder": 1
+        }
+      ],
+      "qualityNotes": [
+        "Source has inconsistent summary percentages, follow-up units/durations and median BMI. Individual Table 2 values retained without correction.",
+        "No patient-specific follow-up length, recurrence assessment time or pain scores imported.",
+        "Published index procedure is not necessarily the first lifetime operation."
+      ]
+    },
+    {
+      "id": "LIT-2026-LASER-ADM-4",
+      "sourceKey": "laser-adm",
+      "sourceCase": "Table 2, patient 4",
+      "sourceLocator": "Table 2, row 4; Methods (shared procedure)",
+      "patient": {
+        "ageAtPresentation": 29,
+        "sex": "Male",
+        "bmi": 21.6,
+        "diseaseDurationMonths": 12,
+        "operationTechnique": "Laser ablation with acellular dermal matrix implantation",
+        "anatomicalSite": "Sacrococcygeal"
+      },
+      "surgeries": [],
+      "followups": [
+        {
+          "id": "healing",
+          "followUpIntervalDays": 34,
+          "woundStatus": "Healed",
+          "sourceLocator": "Table 2, row 4",
+          "sourceEventOrder": 1
+        }
+      ],
+      "qualityNotes": [
+        "Source has inconsistent summary percentages, follow-up units/durations and median BMI. Individual Table 2 values retained without correction.",
+        "No patient-specific follow-up length, recurrence assessment time or pain scores imported.",
+        "Published index procedure is not necessarily the first lifetime operation."
+      ]
+    },
+    {
+      "id": "LIT-2026-LASER-ADM-5",
+      "sourceKey": "laser-adm",
+      "sourceCase": "Table 2, patient 5",
+      "sourceLocator": "Table 2, row 5; Methods (shared procedure)",
+      "patient": {
+        "ageAtPresentation": 32,
+        "sex": "Male",
+        "bmi": 23.51,
+        "diseaseDurationMonths": 5,
+        "operationTechnique": "Laser ablation with acellular dermal matrix implantation",
+        "anatomicalSite": "Sacrococcygeal"
+      },
+      "surgeries": [],
+      "followups": [
+        {
+          "id": "healing",
+          "followUpIntervalDays": 35,
+          "woundStatus": "Healed",
+          "sourceLocator": "Table 2, row 5",
+          "sourceEventOrder": 1
+        }
+      ],
+      "qualityNotes": [
+        "Source has inconsistent summary percentages, follow-up units/durations and median BMI. Individual Table 2 values retained without correction.",
+        "No patient-specific follow-up length, recurrence assessment time or pain scores imported.",
+        "Published index procedure is not necessarily the first lifetime operation."
+      ]
+    }
+  ]
+}

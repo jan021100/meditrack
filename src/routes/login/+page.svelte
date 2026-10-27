@@ -6,123 +6,40 @@
   let email = '';
   let password = '';
   let error = '';
+  let submitting = false;
 
   async function loginUser() {
+    if (submitting) return;
     error = '';
+    submitting = true;
     try {
       const auth = getAuth();
       await signInWithEmailAndPassword(auth, email, password);
-      goto('/dashboard');
-    } catch (err: any) {
-      error = err.message || 'Login failed';
+      goto('/dashboard', { invalidateAll: true });
+    } catch {
+      error = 'We could not sign you in. Check your email and password, then try again.';
+    } finally {
+      submitting = false;
     }
   }
 
   onMount(() => {
     const auth = getAuth();
-    auth.onAuthStateChanged(user => {
-      if (user) goto('/dashboard');
+    return auth.onAuthStateChanged(user => {
+      if (user) goto('/dashboard', { invalidateAll: true });
     });
   });
 </script>
-
-<style>
-  .container {
-    max-width: 400px;
-    margin: 4rem auto;
-    padding: 3rem 2rem;
-    background: #f5f5f3;
-    border-radius: 16px;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);
-    font-family: 'Helvetica Neue', sans-serif;
-  }
-
-  h1 {
-    text-align: center;
-    font-size: 2rem;
-    font-weight: 600;
-    margin-bottom: 2rem;
-    color: #000;
-  }
-
-  label {
-    display: block;
-    margin-top: 1rem;
-    font-weight: 500;
-    font-size: 0.95rem;
-    color: #333;
-  }
-
-  input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    margin-top: 0.25rem;
-    border-radius: 12px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-    background: white;
-    box-sizing: border-box;
-  }
-
-  button {
-    margin-top: 2rem;
-    width: 100%;
-    padding: 0.9rem;
-    background-color: #000;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background-color: #333;
-  }
-
-  .error {
-    color: red;
-    margin-top: 1rem;
-    text-align: center;
-  }
-
-  .register-link {
-    margin-top: 2rem;
-    text-align: center;
-    font-size: 0.95rem;
-  }
-
-  .register-link a {
-    color: #000;
-    font-weight: 500;
-    text-decoration: underline;
-  }
-
-  .register-link a:hover {
-    color: #444;
-  }
-</style>
-
-<div class="container">
-  <h1>Login</h1>
-
-  <form on:submit|preventDefault={loginUser}>
-    <label for="email">Email</label>
-    <input id="email" type="email" bind:value={email} required />
-
-    <label for="password">Password</label>
-    <input id="password" type="password" bind:value={password} required />
-
-    <button type="submit">➡ Login</button>
+<svelte:head><title>Sign in · MediTrack</title></svelte:head>
+<div class="auth-page">
+  <div class="page-heading"><div><h1>Welcome back</h1><p>Sign in to your MediTrack account.</p></div></div>
+  <form class="clinical-form" on:submit|preventDefault={loginUser}>
+    <div class="form-field"><label for="email">Email</label><input id="email" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" bind:value={email} required /></div>
+    <div class="form-field password-field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" bind:value={password} required /></div>
+    {#if error}<p class="feedback error" role="alert">{error}</p>{/if}
+    <div class="form-footer"><button class="primary-action" type="submit" disabled={submitting}>{submitting ? 'Signing in…' : 'Sign in'}</button></div>
   </form>
-
-  {#if error}
-    <p class="error">{error}</p>
-  {/if}
-
-  <p class="register-link">
-    No account yet?
-    <a href="/register">Register here</a>
-  </p>
+  <p class="account-link"><a href="/reset-password">Forgot your password?</a></p>
+  <p class="account-link">New to MediTrack? <a href="/register">Create an account</a></p>
 </div>
+<style>.password-field { margin-top: 24px; } .primary-action { width: 100%; } .account-link { margin-top: 28px; color: var(--muted); font-size: 14px; text-align: center; }</style>

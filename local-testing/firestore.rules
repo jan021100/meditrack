@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Clinical access requires team approval; administrator claims remain read-only.
+    function signedIn() { return request.auth != null; }
+    function admin() { return signedIn() && request.auth.token.get('role', '') == 'admin'; }
+    function approved() { return signedIn() && exists(/databases/$(database)/documents/memberships/$(request.auth.uid)) && get(/databases/$(database)/documents/memberships/$(request.auth.uid)).data.approved == true; }
+    function owner(data) { return approved() && !admin() && data.userId == request.auth.uid; }
+    match /memberships/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || admin());
+      allow create, update: if admin()
+        && request.resource.data.keys().hasOnly(['approved', 'approvedBy', 'approvedAt'])
+        && request.resource.data.approved is bool
+        && request.resource.data.approvedBy == request.auth.uid
+        && request.resource.data.approvedAt == request.time;
+    }
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || admin());
+      // A profile cannot grant an admin role. Claims require trusted administration.
+      allow create: if signedIn() && request.auth.uid == uid && request.resource.data.get('role', 'user') == 'user';
+      allow update: if signedIn() && request.auth.uid == uid && request.resource.data.get('role', 'user') == resource.data.get('role', 'user');
+    }
+    match /patients/{patientId} {
+      allow read: if admin() || owner(resource.data);
+      allow create: if owner(request.resource.data);
+      allow update: if owner(resource.data) && request.resource.data.userId == resource.data.userId;
+      allow delete: if owner(resource.data);
+      match /{collection}/{documentId} {
+        // Every clinical child document inherits access from its parent patient.
+        allow read: if collection in ['surgeries', 'followups', 'proms'] && (admin() || owner(get(/databases/$(database)/documents/patients/$(patientId)).data));
+        allow write: if collection in ['surgeries', 'followups', 'proms'] && owner(get(/databases/$(database)/documents/patients/$(patientId)).data);
+      }
+    }
+  }
+}

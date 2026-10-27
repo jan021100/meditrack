@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-21T15:18:42.177793+00:00",
+  "title": "Design System: MediTrack",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "account-menu",
+        "value": "0 8px 28px rgb(36 41 37 / 12%)",
+        "purpose": "Account disclosure menu."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-shell",
+        "value": "600px"
+      },
+      {
+        "name": "stacked-patient-fields",
+        "value": "850px"
+      },
+      {
+        "name": "record-heading-stack",
+        "value": "750px"
+      }
+    ],
+    "colorMeta": {
+      "page": {
+        "role": "neutral",
+        "displayName": "Page",
+        "tonalRamp": [
+          "oklch(15% 0.006 100)",
+          "oklch(26% 0.006 100)",
+          "oklch(38% 0.006 100)",
+          "oklch(49% 0.006 100)",
+          "oklch(61% 0.006 100)",
+          "oklch(72% 0.006 100)",
+          "oklch(84% 0.006 100)",
+          "oklch(95% 0.006 100)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(15% 0.005 90)",
+          "oklch(26% 0.005 90)",
+          "oklch(38% 0.005 90)",
+          "oklch(49% 0.005 90)",
+          "oklch(61% 0.005 90)",
+          "oklch(72% 0.005 90)",
+          "oklch(84% 0.005 90)",
+          "oklch(95% 0.005 90)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15% 0.008 145)",
+          "oklch(26% 0.008 145)",
+          "oklch(38% 0.008 145)",
+          "oklch(49% 0.008 145)",
+          "oklch(61% 0.008 145)",
+          "oklch(72% 0.008 145)",
+          "oklch(84% 0.008 145)",
+          "oklch(95% 0.008 145)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.014 125)",
+          "oklch(26% 0.014 125)",
+          "oklch(38% 0.014 125)",
+          "oklch(49% 0.014 125)",
+          "oklch(61% 0.014 125)",
+          "oklch(72% 0.014 125)",
+          "oklch(84% 0.014 125)",
+          "oklch(95% 0.014 125)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15% 0.014 110)",
+          "oklch(26% 0.014 110)",
+          "oklch(38% 0.014 110)",
+          "oklch(49% 0.014 110)",
+          "oklch(61% 0.014 110)",
+          "oklch(72% 0.014 110)",
+          "oklch(84% 0.014 110)",
+          "oklch(95% 0.014 110)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Accent",
+        "tonalRamp": [
+          "oklch(15% 0.035 155)",
+          "oklch(26% 0.035 155)",
+          "oklch(38% 0.035 155)",
+          "oklch(49% 0.035 155)",
+          "oklch(61% 0.035 155)",
+          "oklch(72% 0.035 155)",
+          "oklch(84% 0.035 155)",
+          "oklch(95% 0.035 155)"
+        ]
+      },
+      "hover": {
+        "role": "neutral",
+        "displayName": "Hover",
+        "tonalRamp": [
+          "oklch(15% 0.014 105)",
+          "oklch(26% 0.014 105)",
+          "oklch(38% 0.014 105)",
+          "oklch(49% 0.014 105)",
+          "oklch(61% 0.014 105)",
+          "oklch(72% 0.014 105)",
+          "oklch(84% 0.014 105)",
+          "oklch(95% 0.014 105)"
+        ]
+      },
+      "danger": {
+        "role": "error",
+        "displayName": "Danger",
+        "tonalRamp": [
+          "oklch(15% 0.13 27)",
+          "oklch(26% 0.13 27)",
+          "oklch(38% 0.13 27)",
+          "oklch(49% 0.13 27)",
+          "oklch(61% 0.13 27)",
+          "oklch(72% 0.13 27)",
+          "oklch(84% 0.13 27)",
+          "oklch(95% 0.13 27)"
+        ]
+      }
+    },
+    "motion": [
+      {
+        "name": "immediate-feedback",
+        "value": "none",
+        "purpose": "No transition animation; active controls immediately use opacity 0.8."
+      }
+    ],
+    "contrastOverrides": {
+      "media": "(prefers-contrast: more)",
+      "muted": "#3f463d",
+      "line": "#858e80",
+      "field-border": "#596452"
+    }
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "description": "Primary patient creation action.",
+      "html": "<button class=\"ds-primary\">New patient</button>",
+      "css": ".ds-primary {font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:44px;padding:12px 20px;border:1px solid var(--ink);border-radius:6px;background:var(--ink);color:var(--surface);font-weight:500;cursor:pointer} @media (hover: hover) and (pointer: fine) {.ds-primary:hover {background:var(--accent);border-color:var(--accent)}} .ds-primary:focus-visible {outline:2px solid var(--accent);outline-offset:4px;} .ds-primary:not(:disabled):active {opacity:.8}",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Retry action",
+      "kind": "button",
+      "description": "Patient-list error recovery.",
+      "html": "<button class=\"ds-retry\">Try again</button>",
+      "css": ".ds-retry {font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:10px 16px;min-height:44px;border:1px solid var(--line);border-radius:6px;color:var(--ink);background:var(--surface);cursor:pointer} @media (hover: hover) and (pointer: fine) {.ds-retry:hover {background:var(--hover)}} .ds-retry:focus-visible {outline:2px solid var(--accent);outline-offset:4px;} .ds-retry:not(:disabled):active {opacity:.8}",
+      "refersTo": "button-retry"
+    },
+    {
+      "name": "Patient navigation",
+      "kind": "nav",
+      "description": "Underlined main navigation.",
+      "html": "<nav><a class=\"ds-nav\" href=\"#\" aria-current=\"page\">Patients</a></nav>",
+      "css": ".ds-nav {font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:inline-block;color:var(--muted);font-weight:500;font-size:14px;text-decoration:none;padding:10px 0;border-bottom:1px solid transparent} .ds-nav:focus-visible {outline:2px solid var(--accent);outline-offset:4px;} .ds-nav[aria-current=\"page\"] {color:var(--accent);border-color:var(--accent)}"
+    },
+    {
+      "name": "Patient row",
+      "kind": "custom",
+      "description": "Compact preview of the linked patient-row pattern.",
+      "html": "<a class=\"ds-row\" href=\"#\"><span>Case 014</span><span>Not recorded</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"/></svg></a>",
+      "css": ".ds-row {font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 20px;min-height:84px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:14px;font-variant-numeric:tabular-nums} @media (hover: hover) and (pointer: fine) {.ds-row:hover {background:var(--hover)}} .ds-row:focus-visible {outline:2px solid var(--accent);outline-offset:4px;}"
+    },
+    {
+      "name": "Shared form field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Clinical and account text field.",
+      "html": "<label class=\"ds-field\">Email<input type=\"email\" /></label>",
+      "css": ".ds-field {display:block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);font-size:14px;font-weight:500;line-height:1.5}.ds-field input {display:block;width:100%;min-height:48px;margin-top:8px;padding:11px 13px;border:1px solid var(--field-border);border-radius:7px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px;line-height:1.5}.ds-field input:focus-visible {outline:2px solid var(--accent);outline-offset:4px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Modern, warm medical practice",
+    "overview": "Friendly professionalism comes from neutral surfaces, dark system typography, muted green accents and fine rules. Sparse English controls keep patient records easy to scan.\n\nThis captures the shared design across the header, home, account screens, patient lists, read-only records and clinical forms.",
+    "keyCharacteristics": [
+      "Neutral off-white canvas and white surfaces.",
+      "Restrained green accents and clear type.",
+      "Spacious rows with fine dividers."
+    ],
+    "rules": [],
+    "dos": [
+      "Do retain system typography and sparse English controls.",
+      "Do reuse the shared palette, fine rules and responsive patient rows.",
+      "Do show visible keyboard focus and explicit loading, empty and error states."
+    ],
+    "donts": [
+      "Don't add decorative elevation to flat content and form sections."
+    ]
+  }
+}
