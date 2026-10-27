@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getAccess } from '$lib/access';
+  import { getAccess } from '#lib/access.ts';
   import { collection, doc, getDocs, getFirestore, serverTimestamp, setDoc } from 'firebase/firestore';
   type Member = { uid: string; name: string; email: string; workplace: string; approved: boolean; currentAdmin: boolean };
   let members: Member[] = [];

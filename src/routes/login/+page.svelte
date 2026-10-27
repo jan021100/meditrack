@@ -15,7 +15,7 @@
     try {
       const auth = getAuth();
       await signInWithEmailAndPassword(auth, email, password);
-      goto('/dashboard', { invalidateAll: true });
+      goto('/dashboard', { refreshAll: true });
     } catch {
       error = 'We could not sign you in. Check your email and password, then try again.';
     } finally {
@@ -26,7 +26,7 @@
   onMount(() => {
     const auth = getAuth();
     return auth.onAuthStateChanged(user => {
-      if (user) goto('/dashboard', { invalidateAll: true });
+      if (user) goto('/dashboard', { refreshAll: true });
     });
   });
 </script>

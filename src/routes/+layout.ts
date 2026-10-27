@@ -1,9 +1,9 @@
 // src/routes/+layout.ts
 import type { LayoutLoad } from './$types';
-import { auth } from '$lib/firebase/firebase';
-import { getAccess } from '$lib/access';
+import { auth } from '#lib/firebase/firebase.ts';
+import { getAccess } from '#lib/access.ts';
 import { redirect } from '@sveltejs/kit';
-import { browser, dev } from '$app/environment';
+import { browser, dev } from '$app/env';
 
 type UserData = {
   uid: string;

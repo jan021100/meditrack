@@ -1,14 +1,13 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { requireClinicalEditor } from '$lib/access';
+  import { page } from '$app/state';
+  import { requireClinicalEditor } from '#lib/access.ts';
   import { goto } from '$app/navigation';
-  import OperationContext from '$lib/components/OperationContext.svelte';
-  import { assessmentContext, followupOutcome, OUTCOMES } from '$lib/clinical';
+  import OperationContext from '#lib/components/OperationContext.svelte';
+  import { assessmentContext, followupOutcome, OUTCOMES } from '#lib/clinical.ts';
   import { getFirestore, doc, getDoc } from 'firebase/firestore';
-  import { saveDocumentation } from '$lib/firebase/documentation';
-  import { get } from 'svelte/store';
+  import { saveDocumentation } from '#lib/firebase/documentation.ts';
 
-  const patientId = get(page).params.id ?? '';
+  const patientId = page.params.id ?? '';
   if (!patientId) throw new Error('Missing patient ID.');
 
   let followUpDate = '';

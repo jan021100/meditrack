@@ -10,8 +10,8 @@
     Timestamp
   } from 'firebase/firestore';
   import { getAuth } from 'firebase/auth';
-  import { getAccess, authorLabel } from '$lib/access';
-  import PatientList from '$lib/components/PatientList.svelte';
+  import { getAccess, authorLabel } from '#lib/access.ts';
+  import PatientList from '#lib/components/PatientList.svelte';
 
   const db = getFirestore();
   const auth = getAuth();

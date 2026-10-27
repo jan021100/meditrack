@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { requireClinicalEditor } from '$lib/access';
+  import { requireClinicalEditor } from '#lib/access.ts';
   import { goto } from '$app/navigation';
   import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-  import { caseData, clearCaseDraft, getCaseDraftFor, type BaselineData } from '$lib/stores/caseStore';
+  import { caseData, clearCaseDraft, getCaseDraftFor, type BaselineData } from '#lib/stores/caseStore.ts';
   import { onDestroy } from 'svelte';
 
   let baseData: Partial<BaselineData> = {};

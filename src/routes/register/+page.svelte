@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { registerUser } from '$lib/firebase/auth';
+  import { registerUser } from '#lib/firebase/auth.ts';
   import { goto } from '$app/navigation';
 
   let email = '';
@@ -18,7 +18,7 @@
     try {
       await registerUser(email, password, { title, firstName, lastName, workplace });
 
-      goto('/pending', { invalidateAll: true });
+      goto('/pending', { refreshAll: true });
     } catch {
       error = 'We could not complete registration. Check your details and try again. If an account was already created, try signing in.';
     } finally {

@@ -148,3 +148,23 @@ Final route polish: unauthenticated browser navigation to clinical/team pages re
 Final review identified that a Firebase Auth UID switch does not itself clear Firestore’s client memory cache. Added a regression reproducing an A document still readable from the same client cache after switching to B; a recreated client has no such cached document and B’s server read is denied. Root Auth changes now use full document replacement instead of SPA routing, discarding that memory. Browser-history restoration reloads persisted pages as well. No additional package, clinical data migration or backend access expansion. This complements (and does not replace) the UID-bound draft clearing and Firestore rules.
 
 The fresh-client cache regression passed. Browser registration still completed its profile write, remained pending, and logout returned to sign-in; Back did not restore an authenticated session. Disposable registration account/profile removed. First sign-in deliberately keeps SPA navigation so it cannot interrupt registration’s profile write. Read-only provider metadata additionally found zero scheduled Firestore backups.
+
+
+## 27.10.2026 – Zwei niedrige Paketwarnungen lokal behoben; Backup-Kosten abgelehnt
+
+**Ziel:** Bekannte Paketlücken ohne Unterdrückung der Warnungen beheben; Produktionsdaten und veröffentlichte Version unverändert lassen.
+
+**Änderung:** Kontrolliertes Update auf SvelteKit3.1.0 mit kompatiblem Vercel-Adapter7.0.1, Vite8.3.5, Svelte-Plugin7.3.1 und TypeScript6.0.3. Konfiguration in vite.config.ts zusammengeführt, veraltete Svelte-Konfigurationsdatei und leere Vorlagen-Datei src/lib/index.ts entfernt. Interne Imports und Navigationsaufrufe an Kit3 angepasst; UI-Testumschaltung nutzt die neue reaktive Seiteninformation. Cookie-Override entfernt, da die neue Framework-Version cookie2 benötigt. Keine neue Produktfunktion oder Abstraktionsschicht.
+
+**Prüfung:** npm audit0bekannte Sicherheitslücken; Svelte/TypeScript0Fehler/0Warnungen; Emulator-Regressionssuite einschließlich negativer Rechteprüfungen, Freischaltung/Widerruf, Admin-Leserechten, paralleler Nummerierung, Kontowechsel-Cache, PROM-Validierung und deskriptiver Auswertung erfolgreich. Browser: lokale Anmeldung, Fallansicht, PROM mit echtem Nullwert und sonst leeren Antworten gespeichert und nach Neuladen sichtbar, synthetischer Fall aus Analyse ausgeschlossen, aktive Navigation und UI-Testumschaltung geprüft, Logout erfolgreich. Temporäre Testdaten anschließend entfernt. Keine produktiven Patientendokumente gelesen oder geschrieben.
+
+**Abschlussprüfung:** Produktionsbuild erfolgreich; Preview-Build wird weiterhin absichtlich vor dem Bauen abgewiesen. Acht Literaturfälle mit zwölf Unterdokumenten nach Testbereinigung anhand identischem SHA-256 unverändert bestätigt.
+
+**Backup:** GitHub schützt den Programmstand, nicht die Patientendaten. Managed-Firestore-Backups benötigen einen Abrechnungstarif und verursachen Kosten; Nutzer hat ausdrücklich jede kostenpflichtige Aktivierung abgelehnt. Keine Tarife/Backups geändert, keine Patientenkopie angelegt. Wiederherstellung weiterhin ungeprüft.
+
+**Veröffentlichung:** Nur lokaler Stand; kein Commit, Push oder Deployment in diesem Arbeitsschritt. Prüfbelege im Arbeitsbereich outputs/MediTrack-Paketupdate-2026-10-27.
+
+
+## 27.10.2026 – Veröffentlichung des geprüften Paketupdates beauftragt
+
+Der Nutzer hat Commit, GitHub-Push und Veröffentlichung über das bestehende Vercel-Projekt ausdrücklich freigegeben. Der unverändert getestete Paketstand wird auf main veröffentlicht; anschließend werden Vercel-Commitzuordnung, Bereitstellungsstatus und öffentliche Seiten ohne Anmeldung oder Zugriff auf Patientendaten geprüft. Kein Datenbank-Deployment, keine Migration und keine kostenpflichtige Aktivierung. Online-Nachweis im Arbeitsbereich outputs/MediTrack-Paketupdate-2026-10-27. Die institutionelle Freigabe und Datensicherung bleiben offen.

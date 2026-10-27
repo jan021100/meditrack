@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { getFirestore } from 'firebase/firestore';
-  import { operationOptions } from '$lib/clinical';
+  import { operationOptions } from '#lib/clinical.ts';
   export let patientId: string;
   export let operationId = '';
   let options: { id: string; label: string }[] = [];

@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { requireClinicalEditor } from '$lib/access';
+  import { requireClinicalEditor } from '#lib/access.ts';
   import { goto } from '$app/navigation';
   import { getFirestore } from 'firebase/firestore';
-  import { saveDocumentation } from '$lib/firebase/documentation';
-  import { page } from '$app/stores';
-  import { get } from 'svelte/store';
+  import { saveDocumentation } from '#lib/firebase/documentation.ts';
+  import { page } from '$app/state';
 
-  const patientId = get(page).params.id ?? '';
+  const patientId = page.params.id ?? '';
   if (!patientId) throw new Error('Missing patient ID.');
 
   let hospitalTown = '';

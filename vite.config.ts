@@ -1,5 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import adapter from '@sveltejs/adapter-vercel';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 // A Vercel preview must never connect colleagues to the production patient database.
 if (process.env.VERCEL_ENV === 'preview' || (process.env.VERCEL && process.env.VERCEL_ENV !== 'production')) {
@@ -7,5 +9,5 @@ if (process.env.VERCEL_ENV === 'preview' || (process.env.VERCEL && process.env.V
 }
 
 export default defineConfig({
-	plugins: [sveltekit()]
+	plugins: [sveltekit({ preprocess: vitePreprocess(), adapter: adapter({ regions: ['fra1'] }) })]
 });

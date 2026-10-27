@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { onMount } from 'svelte';
   import {
     getFirestore,
@@ -9,8 +9,8 @@
     getDocs,
     type Timestamp
   } from 'firebase/firestore';
-  import { getAccess, authorLabel } from '$lib/access';
-  import RecordFields from '$lib/components/RecordFields.svelte';
+  import { getAccess, authorLabel } from '#lib/access.ts';
+  import RecordFields from '#lib/components/RecordFields.svelte';
 
   type DocumentationEntry = {
     [key: string]: unknown;
@@ -36,7 +36,7 @@
 
   onMount(async () => {
     const db = getFirestore();
-    const id = $page.params.id;
+    const id = page.params.id;
     if (!id) { error = 'Missing patient ID.'; loading = false; return; }
     const docRef = doc(db, 'patients', id);
     try {
@@ -89,13 +89,13 @@
   <div class="page-heading">
     <div>
       <h1>Patient record</h1>
-      <p class="case-id">Case ID: {$page.params.id}</p>
+      <p class="case-id">Case ID: {page.params.id}</p>
     </div>
     {#if patient && !error && !loading && !isAdmin}
       <nav class="record-actions" aria-label="Add documentation">
-        <a class="secondary-action" href={`/patients/${$page.params.id}/surgery`}>Add surgery</a>
-        <a class="secondary-action" href={`/patients/${$page.params.id}/followup`}>Add follow-up</a>
-        <a class="secondary-action" href={`/patients/${$page.params.id}/proms`}>Add PROM</a>
+        <a class="secondary-action" href={`/patients/${page.params.id}/surgery`}>Add surgery</a>
+        <a class="secondary-action" href={`/patients/${page.params.id}/followup`}>Add follow-up</a>
+        <a class="secondary-action" href={`/patients/${page.params.id}/proms`}>Add PROM</a>
       </nav>
     {/if}
   </div>

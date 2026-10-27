@@ -230,3 +230,21 @@ flowchart TD
 ```
 
 Code: src/lib/access.ts, src/routes/+layout.ts, src/routes/pending, src/routes/admin/users und security/firestore.rules. Profilfelder können keine Freigabe oder Adminrolle erteilen. Bereits gelesene Daten lassen sich durch einen Rechteentzug nicht aus externen Kopien zurückholen.
+
+
+## Paketwartung und Datensicherung — 27.10.2026
+
+```mermaid
+flowchart TD
+  A[Bekannte Paketwarnung] --> B[Offizielle Korrektur und Kompatibilität prüfen]
+  B --> C[Pakete und betroffene Aufrufe lokal aktualisieren]
+  C --> D[Typprüfung, Build, lokale Rechte- und Datentests]
+  D --> E[Browserprüfung und temporäre Testdaten entfernen]
+  E --> F[Dokumentierter lokaler Stand]
+  F --> G[Veröffentlichung erst nach ausdrücklicher Anweisung]
+  H[GitHub: Programmcode] -. keine Patientendaten .-> I[Firestore: Patientendokumente]
+  I --> J[Eigene Sicherung und getestete Wiederherstellung nötig]
+  J --> K[Automatische kostenpflichtige Backups vom Nutzer abgelehnt]
+```
+
+Der Paketstand wurde zunächst lokal aktualisiert und geprüft; die anschließende Veröffentlichung über GitHub/Vercel wurde am27.10. ausdrücklich beauftragt. Der Bereitstellungsnachweis liegt im Arbeitsbereich. Die Backup-Lücke bleibt offen. Es wurde weder eine automatische Sicherung aktiviert noch eine lokale Kopie echter Patientendaten angelegt.

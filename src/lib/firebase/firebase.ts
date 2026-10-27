@@ -1,5 +1,5 @@
 // All Firebase access starts here, before any page can read or write data.
-import { browser, dev } from '$app/environment';
+import { browser, dev } from '$app/env';
 import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';

@@ -2,8 +2,8 @@
   import { onMount } from 'svelte';
   import { getAuth } from 'firebase/auth';
   import { collection, getDocs, getFirestore, query, where } from 'firebase/firestore';
-  import { isLocalTest } from '$lib/firebase/firebase';
-  import { isSynthetic, origin, summarize, type AnalysisCase } from '$lib/analysis/summary';
+  import { isLocalTest } from '#lib/firebase/firebase.ts';
+  import { isSynthetic, origin, summarize, type AnalysisCase } from '#lib/analysis/summary.ts';
 
   let records: AnalysisCase[] = [];
   let loading = true;

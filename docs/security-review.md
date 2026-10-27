@@ -46,3 +46,14 @@ Firestore region and index confirmed; database deletion protection/PITR disabled
 ### Shared-browser memory cache follow-up
 
 Auth UID changes do not clear a Firestore instance’s remote-document memory cache. A local SDK regression reproduces cached A data after switching that same client to B. Application Auth changes now replace the full document; restored browser-history pages reload too. A recreated client has no A cache and B’s server read remains denied. This closes the application’s ordinary shared-browser session boundary; it cannot retract data already copied or protect an unlocked operating-system session from its operator.
+
+
+## 27 October — dependency remediation
+
+SvelteKit3.1.0 resolves GHSA-pfhg-q3qv-9q6r and GHSA-27mw-82g8-phjj. Companion updates: adapter-vercel7.0.1, vite-plugin-svelte7.3.1, Vite8.3.5, TypeScript6.0.3; Node22.17+ within22.x required. npm audit reports zero known vulnerabilities. No forced or legacy peer resolution was used. Removed the cookie0.7 override because Kit3 requires cookie2.
+
+Configuration moved from obsolete svelte.config.js into the existing Vite plugin. Library imports use explicit #lib paths; environment/state/navigation APIs follow the official Kit3 migration guide. Only the UI fixture needed reactive rune conversion. Existing approval, ownership, memory-cache isolation, local-only testing and preview-deployment guards were preserved. SDK authorization/concurrency/PROM/analysis regression passed. No production patient records or database configuration changed. The user subsequently authorised GitHub/Vercel publication; hosted verification is retained in the workspace release report.
+
+The user declined paid backups. Managed backups/PITR remain disabled; Git history is a code backup and does not contain clinical records. Local test exports are not production recovery evidence.
+
+References: https://svelte.dev/docs/kit/migrating-to-sveltekit-3, https://github.com/sveltejs/kit/security/advisories/GHSA-pfhg-q3qv-9q6r, https://github.com/sveltejs/kit/security/advisories/GHSA-27mw-82g8-phjj, https://firebase.google.com/docs/firestore/backups.

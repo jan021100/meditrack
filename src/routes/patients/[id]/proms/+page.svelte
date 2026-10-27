@@ -1,14 +1,13 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { requireClinicalEditor } from '$lib/access';
+  import { page } from '$app/state';
+  import { requireClinicalEditor } from '#lib/access.ts';
   import { goto } from '$app/navigation';
   import { getFirestore, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-  import OperationContext from '$lib/components/OperationContext.svelte';
-  import { assessmentContext } from '$lib/clinical';
-  import { buildProm } from '$lib/prom';
-  import { get } from 'svelte/store';
+  import OperationContext from '#lib/components/OperationContext.svelte';
+  import { assessmentContext } from '#lib/clinical.ts';
+  import { buildProm } from '#lib/prom.ts';
 
-  const patientId = get(page).params.id ?? '';
+  const patientId = page.params.id ?? '';
   if (!patientId) throw new Error('Missing patient ID.');
 
   let painBefore: number | null | undefined = null;

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { invalidateAll, goto } from '$app/navigation';
+  import { refreshAll, goto } from '$app/navigation';
   export let data;
   let checking = false;
   let error = '';
   async function checkApproval() {
     checking = true; error = '';
     try {
-      await invalidateAll();
+      await refreshAll();
       if (data.user?.approved) await goto('/dashboard');
     } catch { error = 'Your approval status could not be checked. Please try again.'; }
     finally { checking = false; }

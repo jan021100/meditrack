@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { setCaseDraft } from '$lib/stores/caseStore';
-  import { requireClinicalEditor } from '$lib/access';
+  import { setCaseDraft } from '#lib/stores/caseStore.ts';
+  import { requireClinicalEditor } from '#lib/access.ts';
   let error = '';
   let submitting = false;
 

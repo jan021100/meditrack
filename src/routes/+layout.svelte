@@ -1,13 +1,13 @@
 <script lang="ts">
-  import '$lib/styles.css';
-  import { clearCaseDraft } from '$lib/stores/caseStore';
-  import { isLocalTest } from '$lib/firebase/firebase';
+  import '#lib/styles.css';
+  import { clearCaseDraft } from '#lib/stores/caseStore.ts';
+  import { isLocalTest } from '#lib/firebase/firebase.ts';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
   import { getFirestore, doc, getDoc } from 'firebase/firestore';
-  import { browser } from '$app/environment';
-  import { page } from '$app/stores';
+  import { browser } from '$app/env';
+  import { page } from '$app/state';
 
   export let data;
   $: authUser = data.user;
@@ -58,7 +58,7 @@
       closeAccount(); fullUser = {};
       // A fresh document also discards Firestore’s in-memory cache from the previous account.
       if (hadIdentity) window.location.replace(user ? '/dashboard' : '/login');
-      else goto(user ? '/dashboard' : '/login', { invalidateAll: true, replaceState: true });
+      else goto(user ? '/dashboard' : '/login', { refreshAll: true, replace: true });
     });
   });
 
@@ -85,7 +85,7 @@
   <div class="header-inner">
     <a class="brand" href={authUser ? '/dashboard' : '/'} aria-label="MediTrack home">MediTrack<span class="brand-dot" aria-hidden="true"></span></a>
     {#if authUser}
-      <nav aria-label="Main navigation">{#if authUser.approved}<a class="nav-link" href="/dashboard" aria-current={$page.url.pathname.startsWith('/patients') || $page.url.pathname === '/dashboard' ? 'page' : undefined}>Patients</a><a class="nav-link" href="/analysis" aria-current={$page.url.pathname === '/analysis' ? 'page' : undefined}>Analysis</a>{:else}<a class="nav-link" href="/pending">Account approval</a>{/if}{#if authUser.role === 'admin'}<a class="nav-link" href="/admin/users" aria-current={$page.url.pathname === '/admin/users' ? 'page' : undefined}>Team</a>{/if}</nav>
+      <nav aria-label="Main navigation">{#if authUser.approved}<a class="nav-link" href="/dashboard" aria-current={page.url.pathname.startsWith('/patients') || page.url.pathname === '/dashboard' ? 'page' : undefined}>Patients</a><a class="nav-link" href="/analysis" aria-current={page.url.pathname === '/analysis' ? 'page' : undefined}>Analysis</a>{:else}<a class="nav-link" href="/pending">Account approval</a>{/if}{#if authUser.role === 'admin'}<a class="nav-link" href="/admin/users" aria-current={page.url.pathname === '/admin/users' ? 'page' : undefined}>Team</a>{/if}</nav>
       <details class="account" bind:this={accountElement} bind:open={accountOpen}>
         <summary aria-label="Open account options">
           <span class="user-name" title={fullUser.firstName ? `${fullUser.title || ''} ${fullUser.firstName} ${fullUser.lastName || ''}`.trim() : authUser.email || 'Account'}>{fullUser.firstName ? `${fullUser.title ? fullUser.title + ' ' : ''}${fullUser.firstName} ${fullUser.lastName || ''}` : authUser.email}</span>
