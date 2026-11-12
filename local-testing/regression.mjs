@@ -19,6 +19,7 @@ const {getAuth,connectAuthEmulator,signInWithCustomToken}=await server.ssrLoadMo
 const {getFirestore,connectFirestoreEmulator,getDocs,getDoc,doc,setDoc,updateDoc,deleteDoc,query,where,collection,terminate,serverTimestamp,getDocFromCache}=await server.ssrLoadModule('firebase/firestore');
 const apps=[];const extraUids=[];let uid;
 const otherPatient=adb.doc('patients/SYNTHETIC-ACCESS-OTHER-20261024');
+const adminPatient=adb.collection('patients').doc();
 const patientRef=adb.doc('patients/SYNTHETIC-CONCURRENCY-20261024');
 async function capture(ref){const snap=await ref.get();const out={data:snap.data(),children:{}};for(const col of await ref.listCollections()){out.children[col.id]={};for(const d of(await col.orderBy('__name__').get()).docs)out.children[col.id][d.id]=await capture(d.ref);}return out;}
 async function snapshot(){const value={};for(const d of(await adb.collection('patients').orderBy('__name__').get()).docs)value[d.id]=await capture(d.ref);return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');}
@@ -124,7 +125,17 @@ try{
  await denied(()=>updateDoc(doc(A,'users',uid),{role:'admin'}));await denied(()=>getDoc(doc(A,'users',b.uid)));
  assert.equal((await getDoc(doc(M.db,'users',uid))).data().firstName,'SYNTHETIC A');
  assert.ok((await getDocs(collection(M.db,'patients'))).size>=10);
- await denied(()=>setDoc(doc(M.db,'patients','SYNTHETIC-ADMIN-CREATE'),{userId:manager.uid}));
+ const ownAdminCase=doc(M.db,'patients',adminPatient.id);
+ await denied(()=>setDoc(ownAdminCase,{userId:uid}));
+ await setDoc(ownAdminCase,{userId:manager.uid,dataOrigin:'synthetic_test',testRunId:'admin-own-case'});
+ await updateDoc(ownAdminCase,{comments:'SYNTHETIC admin own update'});
+ await denied(()=>updateDoc(ownAdminCase,{userId:uid}));
+ await denied(()=>getDoc(doc(A,'patients',adminPatient.id)));
+ const ownAdminProm=doc(M.db,'patients',adminPatient.id,'proms','test');
+ await setDoc(ownAdminProm,{painToday:0});
+ assert.equal((await getDoc(ownAdminProm)).data().painToday,0);
+ await deleteDoc(ownAdminProm);
+ await deleteDoc(ownAdminCase);
  await denied(()=>updateDoc(doc(M.db,'patients',patientRef.id),{comments:'blocked'}));
  await denied(()=>deleteDoc(doc(M.db,'patients',patientRef.id)));
  await denied(()=>setDoc(doc(M.db,'patients',patientRef.id,'proms','blocked'),{painToday:0}));
@@ -138,7 +149,7 @@ try{
  assert.throws(()=>followupOutcome({outcomeClassification:'Persistent disease / never healed',completeHealingDate:'2026-01-10',dateOfRecurrence:'',assessedOn:'2026-03-01'}),/cannot/);
  const recurrence=followupOutcome({outcomeClassification:'Recurrence after complete healing',completeHealingDate:'2026-01-10',dateOfRecurrence:'2026-02-01',assessedOn:'2026-03-01',operationDate:'2026-01-01'});assert.equal(recurrence.recurrence,'Yes');
  const linked=summarize([{id:'linked',patient:{operationDate:'2026-01-01'},surgeries:[],proms:[],followups:[{operationId:'initial',completeHealingDate:'2026-01-11'},{operationId:'other',completeHealingDate:'2026-01-05'}]}]);assert.equal(linked.healing.median,10);
- console.log('Owner separation, admin read-only, profile spoofing denial, operation linkage and outcome validation passed');
+ console.log('Owner separation, admin own writes and foreign read-only, profile spoofing denial, operation linkage and outcome validation passed');
  // Firestore memory belongs to a client, not an Auth UID. Account switches need a fresh document/client.
  let cacheApp,cacheDb;
  const freshCacheClient=async()=>{cacheApp=initializeApp({projectId:'demo-meditrack',apiKey:'demo-meditrack-key'},'cache-boundary');const auth=getAuth(cacheApp);connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});cacheDb=getFirestore(cacheApp);connectFirestoreEmulator(cacheDb,'127.0.0.1',8080);return auth;};
@@ -164,6 +175,7 @@ try{
  for(const {app,db}of apps){await terminate(db);await deleteApp(app);}
  if(uid){const test=(await patientRef.get()).data();if(test?.userId!==uid||test?.testRunId!=='concurrency-20261024')throw Error('Unsafe cleanup target');await adb.recursiveDelete(patientRef);await adb.doc('users/'+uid).delete();await adb.doc('memberships/'+uid).delete();await aauth.deleteUser(uid);}
  if((await otherPatient.get()).exists){assert.equal((await otherPatient.get()).data().testRunId,'access-20261024','Unsafe foreign-case cleanup target');await adb.recursiveDelete(otherPatient);}
+ if((await adminPatient.get()).exists){assert.equal((await adminPatient.get()).get('testRunId'),'admin-own-case');await adb.recursiveDelete(adminPatient);}
  for(const id of extraUids){await adb.doc('users/'+id).delete();await adb.doc('memberships/'+id).delete();await aauth.deleteUser(id);}
  assert.equal(await snapshot(),before,'Existing cases or children changed');
  await admin.delete();await server.close();

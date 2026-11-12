@@ -14,7 +14,6 @@ export async function getAccess(user: User | null = getAuth().currentUser, db: F
 /** UI guard only; Firestore rules must independently enforce the same boundary. */
 export async function requireClinicalEditor() {
   const access = await getAccess();
-  if (access.isAdmin) throw new Error('Administrators have read-only access to clinical records.');
   if (!access.isApproved) throw new Error('Your account must be approved by the study team.');
   return access.user;
 }

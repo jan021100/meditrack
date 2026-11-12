@@ -31,6 +31,7 @@
   let error = '';
   let loading = true;
   let isAdmin = false;
+  let ownsPatient = false;
   let enteredBy = '';
   let recorderUid = '';
 
@@ -40,10 +41,12 @@
     if (!id) { error = 'Missing patient ID.'; loading = false; return; }
     const docRef = doc(db, 'patients', id);
     try {
-      isAdmin = (await getAccess()).isAdmin;
+      const access = await getAccess();
+      isAdmin = access.isAdmin;
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         patient = docSnap.data();
+        ownsPatient = access.isApproved && patient.userId === access.user.uid;
         if (isAdmin) { enteredBy = await authorLabel(db, patient.userId); recorderUid = typeof patient.userId === 'string' ? patient.userId : ''; }
 
         const surgeriesSnap = await getDocs(collection(docRef, 'surgeries'));
@@ -91,7 +94,7 @@
       <h1>Patient record</h1>
       <p class="case-id">Case ID: {page.params.id}</p>
     </div>
-    {#if patient && !error && !loading && !isAdmin}
+    {#if patient && !error && !loading && ownsPatient}
       <nav class="record-actions" aria-label="Add documentation">
         <a class="secondary-action" href={`/patients/${page.params.id}/surgery`}>Add surgery</a>
         <a class="secondary-action" href={`/patients/${page.params.id}/followup`}>Add follow-up</a>
@@ -105,7 +108,7 @@
   {:else if error}
     <p class="error" role="alert">{error}</p>
   {:else if patient}
-    {#if isAdmin}<p class="recorder-note">Read-only administrator view · Entered by {enteredBy}{#if recorderUid}<br />Recorder UID: {recorderUid}{/if}</p>{/if}
+    {#if isAdmin}<p class="recorder-note">{ownsPatient ? 'Own record' : 'Read-only administrator view'} · Entered by {enteredBy}{#if recorderUid}<br />Recorder UID: {recorderUid}{/if}</p>{/if}
     {#if patient.dataOrigin === 'published_individual_case'}
       <section class="record-section" aria-labelledby="source-heading">
         <div class="section-heading"><h2 id="source-heading">Published case · Test data</h2><p>Extracted individual facts, with unreported information left missing. These selected cases do not form a representative study cohort.</p></div>

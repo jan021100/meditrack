@@ -44,7 +44,8 @@
     }
 
     try {
-      const { isAdmin } = await getAccess(user);
+      const { isAdmin, isApproved } = await getAccess(user);
+      if (!isApproved) throw new Error('Account approval is required.');
       userRole = isAdmin ? 'admin' : 'user';
 
       let q;
@@ -92,7 +93,7 @@
       <h1>{userRole === 'admin' ? 'All patients' : 'Your patients'}</h1>
       <p>Patient records and treatment follow-up.</p>
     </div>
-    {#if userRole === 'user'}<a class="primary-action" href="/patients/new">New patient</a>{/if}
+    {#if userRole}<a class="primary-action" href="/patients/new">New patient</a>{/if}
   </div>
   {#if loading}
     <div class="list-state" role="status">Loading patient records…</div>

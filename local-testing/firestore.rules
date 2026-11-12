@@ -1,11 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Clinical access requires team approval; administrator claims remain read-only.
+    // Admins can read all cases; clinical writes still require ownership.
     function signedIn() { return request.auth != null; }
     function admin() { return signedIn() && request.auth.token.get('role', '') == 'admin'; }
     function approved() { return signedIn() && exists(/databases/$(database)/documents/memberships/$(request.auth.uid)) && get(/databases/$(database)/documents/memberships/$(request.auth.uid)).data.approved == true; }
-    function owner(data) { return approved() && !admin() && data.userId == request.auth.uid; }
+    function owner(data) { return (admin() || approved()) && data.userId == request.auth.uid; }
     match /memberships/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || admin());
       allow create, update: if admin()

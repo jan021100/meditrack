@@ -7,11 +7,11 @@
 | Capability | Pending account | Approved clinician | Admin claim |
 |---|---|---|---|
 | Own professional profile | Yes | Yes | Yes |
-| Clinical records and analysis | No | Own only | Global read only |
-| Create/change own clinical records | No | Yes | No |
+| Clinical records and analysis | No | Own only | Global read; own writes only |
+| Create/change own clinical records | No | Yes | Yes |
 | Approve or revoke clinician access | No | No | Yes |
 
-Approvals live in memberships/{uid}, separate from editable profiles. Only trusted admin claims can write the approved flag, their own approvedBy UID and server approvedAt timestamp. Approval never grants an admin claim. Existing normal accounts require explicit approval; no account is automatically grandfathered. Revocation stops further reads/writes without deleting records; data already viewed or copied cannot be recalled. Admins independently retain global read-only clinical access.
+Approvals live in memberships/{uid}, separate from editable profiles. Only trusted admin claims can write the approved flag, their own approvedBy UID and server approvedAt timestamp. Approval never grants an admin claim. Existing normal accounts require explicit approval; no account is automatically grandfathered. Revocation stops further reads/writes without deleting records; data already viewed or copied cannot be recalled. Admins can read all cases independently of clinician approval and can write to their own cases only.
 
 ## Production configuration verified
 
@@ -23,7 +23,7 @@ Approvals live in memberships/{uid}, separate from editable profiles. Only trust
 
 ## Technical checks
 
-Diagnostics0errors/0warnings; local production build; local SDK authorization, anonymous and foreign access negatives, approval/revocation, admin clinical read-only rules, four-client numbering, identity-bound drafts, date/context/PROM logic and descriptive summaries. Browser workflow covers pending login, administrator approval, own list, baseline/initial surgery, further surgery, follow-up, PROM and reload. Test fixtures are isolated and disposable.
+Diagnostics0errors/0warnings; local production build; local SDK authorization, anonymous and foreign access negatives, approval/revocation, admin ownership rules, four-client numbering, identity-bound drafts, date/context/PROM logic and descriptive summaries. Browser workflow covers pending login, administrator approval, own list, baseline/initial surgery, further surgery, follow-up, PROM and reload. Test fixtures are isolated and disposable.
 
 Published release audit:0critical,0high,0moderate,2low affected entries (SvelteKit2). A subsequent update on27October upgrades to SvelteKit3.1.0, adapter-vercel7.0.1, Vite8.3.5, vite-plugin-svelte7.3.1 and TypeScript6.0.3. Its audit has zero known vulnerabilities at every severity. The user explicitly authorised publishing this tested update on27October; hosted verification is recorded separately in the workspace release report. The obsolete cookie override was removed; the gRPC override remains. Do not equate an audit count with complete security.
 

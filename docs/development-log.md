@@ -168,3 +168,9 @@ The fresh-client cache regression passed. Browser registration still completed i
 ## 27.10.2026 – Veröffentlichung des geprüften Paketupdates beauftragt
 
 Der Nutzer hat Commit, GitHub-Push und Veröffentlichung über das bestehende Vercel-Projekt ausdrücklich freigegeben. Der unverändert getestete Paketstand wird auf main veröffentlicht; anschließend werden Vercel-Commitzuordnung, Bereitstellungsstatus und öffentliche Seiten ohne Anmeldung oder Zugriff auf Patientendaten geprüft. Kein Datenbank-Deployment, keine Migration und keine kostenpflichtige Aktivierung. Online-Nachweis im Arbeitsbereich outputs/MediTrack-Paketupdate-2026-10-27. Die institutionelle Freigabe und Datensicherung bleiben offen.
+
+## 12.11.2026 – Admins können eigene Patienten erfassen
+
+**Änderung:** „New patient“ steht auch Admins zur Verfügung. Die Datenbank prüft beim Anlegen die UID des angemeldeten Kontos; eigene Fälle können anschließend weiter dokumentiert werden. Admins dürfen fremde Fälle weiterhin lesen, aber nicht ändern oder löschen.
+
+**Prüfung:** Svelte/TypeScript ohne Fehler oder Warnungen, Build erfolgreich. Die Emulator-Regression bestätigt eigene Admin-Schreibrechte, verweigerten Eigentümerwechsel und verweigerte Schreibzugriffe auf fremde Fälle. Bestehende Testdaten blieben unverändert. Kein Browser-Durchlauf und keine Änderung an der Online-Version oder den produktiven Firestore-Regeln.
