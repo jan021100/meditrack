@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Admins can read all cases; clinical writes still require ownership.
+    // Admins can read all cases and append follow-ups; other clinical writes require ownership.
     function signedIn() { return request.auth != null; }
     function admin() { return signedIn() && request.auth.token.get('role', '') == 'admin'; }
     function approved() { return signedIn() && exists(/databases/$(database)/documents/memberships/$(request.auth.uid)) && get(/databases/$(database)/documents/memberships/$(request.auth.uid)).data.approved == true; }
@@ -21,13 +21,44 @@ service cloud.firestore {
       allow update: if signedIn() && request.auth.uid == uid && request.resource.data.get('role', 'user') == resource.data.get('role', 'user');
     }
     match /patients/{patientId} {
+      function patientPath() {
+        return /databases/$(database)/documents/patients/$(patientId);
+      }
+      function counters(data) { return data.get('documentationCounters', {}); }
+      function followupNumberAdvanced(before, after) {
+        return after.followups is int
+          && after.followups <= 9007199254740991
+          && after.followups > before.get('followups', 0);
+      }
+      function adminFollowupCounterUpdate() {
+        let before = counters(resource.data);
+        let after = counters(request.resource.data);
+        let entryId = after.followupEntryId;
+        let entry = /databases/$(database)/documents/patients/$(patientId)/followups/$(entryId);
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['documentationCounters'])
+          && after.diff(before).affectedKeys().hasOnly(['followups', 'followupEntryId'])
+          && followupNumberAdvanced(before, after)
+          && !exists(entry) && existsAfter(entry)
+          && getAfter(entry).data.followUpNumber == after.followups;
+      }
+      function adminFollowupCreate(documentId) {
+        let before = counters(get(patientPath()).data);
+        let after = counters(getAfter(patientPath()).data);
+        return request.resource.data.userId == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && followupNumberAdvanced(before, after)
+          && after.followupEntryId == documentId
+          && request.resource.data.followUpNumber == after.followups;
+      }
       allow read: if admin() || owner(resource.data);
       allow create: if owner(request.resource.data);
-      allow update: if owner(resource.data) && request.resource.data.userId == resource.data.userId;
+      allow update: if (owner(resource.data) && request.resource.data.userId == resource.data.userId)
+        || (admin() && adminFollowupCounterUpdate());
       allow delete: if owner(resource.data);
       match /{collection}/{documentId} {
         // Every clinical child document inherits access from its parent patient.
         allow read: if collection in ['surgeries', 'followups', 'proms'] && (admin() || owner(get(/databases/$(database)/documents/patients/$(patientId)).data));
+        allow create: if collection == 'followups' && admin() && adminFollowupCreate(documentId);
         allow write: if collection in ['surgeries', 'followups', 'proms'] && owner(get(/databases/$(database)/documents/patients/$(patientId)).data);
       }
     }

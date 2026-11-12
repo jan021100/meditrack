@@ -174,3 +174,9 @@ Der Nutzer hat Commit, GitHub-Push und Veröffentlichung über das bestehende Ve
 **Änderung:** „New patient“ steht auch Admins zur Verfügung. Die Datenbank prüft beim Anlegen die UID des angemeldeten Kontos; eigene Fälle können anschließend weiter dokumentiert werden. Admins dürfen fremde Fälle weiterhin lesen, aber nicht ändern oder löschen.
 
 **Prüfung:** Svelte/TypeScript ohne Fehler oder Warnungen, Build erfolgreich. Die Emulator-Regression bestätigt eigene Admin-Schreibrechte, verweigerten Eigentümerwechsel und verweigerte Schreibzugriffe auf fremde Fälle. Bestehende Testdaten blieben unverändert. Kein Browser-Durchlauf und keine Änderung an der Online-Version oder den produktiven Firestore-Regeln.
+
+## 12.11.2026 – Admins können Follow-ups zu bestehenden Fällen hinzufügen
+
+„Add follow-up“ erscheint auch in fremden Fällen für Admins. Die Datenbank erlaubt dabei nur einen neuen, dem angemeldeten Admin zugeordneten Eintrag und die dazugehörige Aktualisierung der Nummerierung in derselben Transaktion. Vorhandene Follow-ups, Operationen, PROMs und klinische Stammdaten fremder Fälle bleiben unveränderbar.
+
+Geprüft: Typprüfung ohne Fehler oder Warnungen, Produktionsbuild und Emulator-Regression. Gleichzeitige Anlage durch Fallinhaber und Admin ergab unterschiedliche Nummern; isolierte Zähleränderungen, falsche Autorenzuordnung und fremde Änderungen wurden abgewiesen. Veröffentlichung von App und Regel ausdrücklich beauftragt.

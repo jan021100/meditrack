@@ -26,7 +26,11 @@ export async function saveDocumentation(db: Firestore, patientId: string, kind: 
     if (!Number.isSafeInteger(savedCounter) || savedCounter < 0) throw new Error('Invalid documentation counter.');
     const number = Math.max(savedCounter, legacyMax) + 1;
     if (!Number.isSafeInteger(number)) throw new Error('Documentation counter exhausted.');
-    transaction.update(parent, { [`documentationCounters.${kind}`]: number });
+    // Rules can tie a cross-owner follow-up counter update to this exact new entry.
+    transaction.update(parent, {
+      [`documentationCounters.${kind}`]: number,
+      ...(kind === 'followups' ? { 'documentationCounters.followupEntryId': target.id } : {})
+    });
     transaction.set(target, { ...data, [field]: number, createdAt: serverTimestamp() });
     return { id: target.id, number };
   });

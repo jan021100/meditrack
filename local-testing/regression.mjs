@@ -141,6 +141,22 @@ try{
  await denied(()=>setDoc(doc(M.db,'patients',patientRef.id,'proms','blocked'),{painToday:0}));
  await denied(()=>updateDoc(doc(M.db,'patients',otherPatient.id,'followups','existing'),{comments:'blocked'}));
  await denied(()=>deleteDoc(doc(M.db,'patients',otherPatient.id,'followups','existing')));
+ const foreignCase=doc(M.db,'patients',otherPatient.id);
+ await denied(()=>updateDoc(foreignCase,{'documentationCounters.followups':5,'documentationCounters.followupEntryId':'missing'}));
+ await denied(()=>setDoc(doc(M.db,'patients',otherPatient.id,'followups','standalone'),{userId:manager.uid,followUpNumber:2,createdAt:serverTimestamp()}));
+ await denied(()=>saveDocumentation(M.db,otherPatient.id,'followups',{userId:b.uid}));
+ await denied(()=>saveDocumentation(M.db,otherPatient.id,'surgeries',{userId:manager.uid}));
+ const followups=await Promise.all([
+   saveDocumentation(M.db,otherPatient.id,'followups',{userId:manager.uid}),
+   saveDocumentation(B.db,otherPatient.id,'followups',{userId:b.uid})
+ ]);
+ assert.deepEqual(followups.map(entry=>entry.number).sort((a,b)=>a-b),[2,3]);
+ const adminFollowup=doc(M.db,'patients',otherPatient.id,'followups',followups[0].id);
+ assert.equal((await getDoc(adminFollowup)).data().userId,manager.uid);
+ await denied(()=>updateDoc(adminFollowup,{comments:'blocked'}));
+ await denied(()=>deleteDoc(adminFollowup));
+ assert.equal((await getDoc(foreignCase)).data().userId,b.uid);
+ console.log('Admin foreign follow-up append and shared numbering passed');
  const {assessmentContext,followupOutcome}=await server.ssrLoadModule('/src/lib/clinical.ts');
  assert.equal((await assessmentContext(A,patientRef.id,'initial','2026-01-02')).operationId,'initial');
  await assert.rejects(()=>assessmentContext(A,patientRef.id,'initial','2025-12-31'),/precede/);
@@ -149,7 +165,7 @@ try{
  assert.throws(()=>followupOutcome({outcomeClassification:'Persistent disease / never healed',completeHealingDate:'2026-01-10',dateOfRecurrence:'',assessedOn:'2026-03-01'}),/cannot/);
  const recurrence=followupOutcome({outcomeClassification:'Recurrence after complete healing',completeHealingDate:'2026-01-10',dateOfRecurrence:'2026-02-01',assessedOn:'2026-03-01',operationDate:'2026-01-01'});assert.equal(recurrence.recurrence,'Yes');
  const linked=summarize([{id:'linked',patient:{operationDate:'2026-01-01'},surgeries:[],proms:[],followups:[{operationId:'initial',completeHealingDate:'2026-01-11'},{operationId:'other',completeHealingDate:'2026-01-05'}]}]);assert.equal(linked.healing.median,10);
- console.log('Owner separation, admin own writes and foreign read-only, profile spoofing denial, operation linkage and outcome validation passed');
+ console.log('Owner separation, admin own writes and foreign edit denial, profile spoofing denial, operation linkage and outcome validation passed');
  // Firestore memory belongs to a client, not an Auth UID. Account switches need a fresh document/client.
  let cacheApp,cacheDb;
  const freshCacheClient=async()=>{cacheApp=initializeApp({projectId:'demo-meditrack',apiKey:'demo-meditrack-key'},'cache-boundary');const auth=getAuth(cacheApp);connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});cacheDb=getFirestore(cacheApp);connectFirestoreEmulator(cacheDb,'127.0.0.1',8080);return auth;};

@@ -40,7 +40,7 @@
 <svelte:head><title>Team access · MediTrack</title></svelte:head>
 <div class="page">
   <div class="page-heading"><div><h1>Team access</h1><p>Approve colleagues after checking their identity, study participation and institutional authorisation.</p></div></div>
-  <p class="field-hint">Approval permits access to the clinician’s own records. It does not grant administrator rights. Revoking approval blocks further clinical reads and writes; records remain stored. Administrators can read all cases and write only to their own cases independently of clinician approval.</p>
+  <p class="field-hint">Approval permits access to the clinician’s own records. It does not grant administrator rights. Revoking approval blocks further clinical reads and writes; records remain stored. Administrators can read all cases and document their own cases and add follow-ups to other cases.</p>
   {#if error}<p class="feedback error" role="alert">{error}</p>{/if}
   {#if loading}<p role="status">Loading team accounts…</p>
   {:else if members.length}

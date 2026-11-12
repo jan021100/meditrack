@@ -94,11 +94,11 @@
       <h1>Patient record</h1>
       <p class="case-id">Case ID: {page.params.id}</p>
     </div>
-    {#if patient && !error && !loading && ownsPatient}
+    {#if patient && !error && !loading && (ownsPatient || isAdmin)}
       <nav class="record-actions" aria-label="Add documentation">
-        <a class="secondary-action" href={`/patients/${page.params.id}/surgery`}>Add surgery</a>
+        {#if ownsPatient}<a class="secondary-action" href={`/patients/${page.params.id}/surgery`}>Add surgery</a>{/if}
         <a class="secondary-action" href={`/patients/${page.params.id}/followup`}>Add follow-up</a>
-        <a class="secondary-action" href={`/patients/${page.params.id}/proms`}>Add PROM</a>
+        {#if ownsPatient}<a class="secondary-action" href={`/patients/${page.params.id}/proms`}>Add PROM</a>{/if}
       </nav>
     {/if}
   </div>
@@ -108,7 +108,7 @@
   {:else if error}
     <p class="error" role="alert">{error}</p>
   {:else if patient}
-    {#if isAdmin}<p class="recorder-note">{ownsPatient ? 'Own record' : 'Read-only administrator view'} · Entered by {enteredBy}{#if recorderUid}<br />Recorder UID: {recorderUid}{/if}</p>{/if}
+    {#if isAdmin}<p class="recorder-note">{ownsPatient ? 'Own record' : 'Administrator view · Can add follow-ups'} · Entered by {enteredBy}{#if recorderUid}<br />Recorder UID: {recorderUid}{/if}</p>{/if}
     {#if patient.dataOrigin === 'published_individual_case'}
       <section class="record-section" aria-labelledby="source-heading">
         <div class="section-heading"><h2 id="source-heading">Published case · Test data</h2><p>Extracted individual facts, with unreported information left missing. These selected cases do not form a representative study cohort.</p></div>

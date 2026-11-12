@@ -7,11 +7,12 @@
 | Capability | Pending account | Approved clinician | Admin claim |
 |---|---|---|---|
 | Own professional profile | Yes | Yes | Yes |
-| Clinical records and analysis | No | Own only | Global read; own writes only |
+| Clinical records and analysis | No | Own only | Global read; see write permissions below |
 | Create/change own clinical records | No | Yes | Yes |
+| Add follow-ups to another clinician’s case | No | No | Yes |
 | Approve or revoke clinician access | No | No | Yes |
 
-Approvals live in memberships/{uid}, separate from editable profiles. Only trusted admin claims can write the approved flag, their own approvedBy UID and server approvedAt timestamp. Approval never grants an admin claim. Existing normal accounts require explicit approval; no account is automatically grandfathered. Revocation stops further reads/writes without deleting records; data already viewed or copied cannot be recalled. Admins can read all cases independently of clinician approval and can write to their own cases only.
+Approvals live in memberships/{uid}, separate from editable profiles. Only trusted admin claims can write the approved flag, their own approvedBy UID and server approvedAt timestamp. Approval never grants an admin claim. Existing normal accounts require explicit approval; no account is automatically grandfathered. Revocation stops further reads/writes without deleting records; data already viewed or copied cannot be recalled. Admins can read all cases independently of clinician approval and can document their own cases and append follow-ups to other cases. Existing follow-ups and other clinical data in those cases remain protected.
 
 ## Production configuration verified
 
