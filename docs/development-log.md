@@ -180,3 +180,9 @@ Der Nutzer hat Commit, GitHub-Push und Veröffentlichung über das bestehende Ve
 „Add follow-up“ erscheint auch in fremden Fällen für Admins. Die Datenbank erlaubt dabei nur einen neuen, dem angemeldeten Admin zugeordneten Eintrag und die dazugehörige Aktualisierung der Nummerierung in derselben Transaktion. Vorhandene Follow-ups, Operationen, PROMs und klinische Stammdaten fremder Fälle bleiben unveränderbar.
 
 Geprüft: Typprüfung ohne Fehler oder Warnungen, Produktionsbuild und Emulator-Regression. Gleichzeitige Anlage durch Fallinhaber und Admin ergab unterschiedliche Nummern; isolierte Zähleränderungen, falsche Autorenzuordnung und fremde Änderungen wurden abgewiesen. Veröffentlichung von App und Regel ausdrücklich beauftragt.
+
+## 12.11.2026 – Admins können PROMs zu fremden Fällen hinzufügen (lokal)
+
+„Add PROM“ wird auch Admins angezeigt, die den Fall nicht selbst angelegt haben. Die Regel erlaubt ihnen nur neue PROM-Einträge an vorhandenen Fällen unter eigener UID und mit Serverzeit. Änderungen oder Löschungen vorhandener PROMs fremder Fälle und das Anlegen weiterer Operationen bleiben gesperrt.
+
+Typprüfung und Build erfolgreich. Emulatorprüfung bestätigt Anlage, verweigerten Autorenwechsel, verweigerte Anlage ohne Fall sowie verweigerte Änderungen und Löschungen. Der bestehende Paralleltest für Follow-ups scheiterte einmal mit einem Rechtefehler; der vollständige Wiederholungslauf war erfolgreich. Keine Veröffentlichung oder produktive Prüfung.

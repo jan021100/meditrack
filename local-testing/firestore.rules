@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Admins can read all cases and append follow-ups; other clinical writes require ownership.
+    // Admins can read all cases and append follow-ups and PROMs; other clinical writes require ownership.
     function signedIn() { return request.auth != null; }
     function admin() { return signedIn() && request.auth.token.get('role', '') == 'admin'; }
     function approved() { return signedIn() && exists(/databases/$(database)/documents/memberships/$(request.auth.uid)) && get(/databases/$(database)/documents/memberships/$(request.auth.uid)).data.approved == true; }
@@ -59,6 +59,9 @@ service cloud.firestore {
         // Every clinical child document inherits access from its parent patient.
         allow read: if collection in ['surgeries', 'followups', 'proms'] && (admin() || owner(get(/databases/$(database)/documents/patients/$(patientId)).data));
         allow create: if collection == 'followups' && admin() && adminFollowupCreate(documentId);
+        allow create: if collection == 'proms' && admin() && exists(patientPath())
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.createdAt == request.time;
         allow write: if collection in ['surgeries', 'followups', 'proms'] && owner(get(/databases/$(database)/documents/patients/$(patientId)).data);
       }
     }

@@ -138,7 +138,14 @@ try{
  await deleteDoc(ownAdminCase);
  await denied(()=>updateDoc(doc(M.db,'patients',patientRef.id),{comments:'blocked'}));
  await denied(()=>deleteDoc(doc(M.db,'patients',patientRef.id)));
- await denied(()=>setDoc(doc(M.db,'patients',patientRef.id,'proms','blocked'),{painToday:0}));
+ const foreignProm=doc(M.db,'patients',otherPatient.id,'proms','admin-append');
+ const promData={userId:manager.uid,createdAt:serverTimestamp(),operationId:'initial',assessedOn:'2026-02-01',painToday:0};
+ await denied(()=>setDoc(foreignProm,{...promData,userId:b.uid}));
+ await denied(()=>setDoc(doc(M.db,'patients',adminPatient.id,'proms','orphan'),promData));
+ await setDoc(foreignProm,promData);
+ assert.equal((await getDoc(foreignProm)).data().userId,manager.uid);
+ await denied(()=>updateDoc(foreignProm,{painToday:2}));
+ await denied(()=>deleteDoc(foreignProm));
  await denied(()=>updateDoc(doc(M.db,'patients',otherPatient.id,'followups','existing'),{comments:'blocked'}));
  await denied(()=>deleteDoc(doc(M.db,'patients',otherPatient.id,'followups','existing')));
  const foreignCase=doc(M.db,'patients',otherPatient.id);
